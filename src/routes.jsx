@@ -15,6 +15,7 @@ import { ClientAppointments } from './pages/Client/Appointments';
 import { NewAppointment } from './pages/Client/NewAppointment';
 import { Profile } from './pages/Client/Profile';
 import { useAuth } from './contexts/AuthContext';
+import { Store } from './pages/Store';
 
 const PrivateRoute = ({ children, adminOnly = false }) => {
   const { user, loading, userRole } = useAuth();
@@ -41,6 +42,7 @@ export const AppRoutes = () => {
         {/* Rotas Públicas */}
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+          <Route path="store" element={<Store />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="forgot-password" element={<ForgotPassword />} />

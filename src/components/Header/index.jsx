@@ -50,6 +50,7 @@ export const Header = () => {
           <li><Link to="/">Home</Link></li>
           <li><Link to="/servicos">Serviços</Link></li>
           <li><Link to="/produtos">Lingerie</Link></li>
+          <li><Link to="/store">Loja</Link></li>
           <li>
             <Link to={user ? "/client/new-appointment" : "/login"}>
               Agendar
