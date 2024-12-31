@@ -5,13 +5,14 @@ import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 import { Button } from '../Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotification } from '../../contexts/NotificationContext';
-import { 
-  HeaderContainer, 
-  Logo, 
-  Nav, 
-  NavLinks, 
+import { Cart } from '../Cart';
+import {
+  HeaderContainer,
+  Logo,
+  Nav,
+  NavLinks,
   MobileIcon,
-  ButtonContainer 
+  ButtonContainer
 } from './styles';
 
 export const Header = () => {
@@ -58,6 +59,7 @@ export const Header = () => {
           </li>
         </NavLinks>
         <ButtonContainer>
+          <Cart />
           {user ? (
             <>
               {user.role === 'admin' && (

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useNotification } from '../../contexts/NotificationContext';
+import { useCart } from '../../contexts/CartContext';
 import { 
   AiOutlineSearch, 
   AiOutlineFilter,
@@ -33,11 +34,13 @@ export const Store = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const { showError } = useNotification();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     loadProducts();
   }, []);
 
+  
   const loadProducts = async () => {
     try {
       const productsRef = collection(db, 'products');
@@ -84,6 +87,7 @@ export const Store = () => {
   };
 
   const handleAddToCart = (product) => {
+    addToCart(product);
     // Implementar adição ao carrinho depois
     console.log('Adicionar ao carrinho:', product);
   };
