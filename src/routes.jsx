@@ -17,6 +17,7 @@ import { Profile } from './pages/Client/Profile';
 import { Checkout } from './pages/Checkout';
 import { Store } from './pages/Store';
 import { useAuth } from './contexts/AuthContext';
+import { Orders } from './pages/Client/Orders';
 
 const PrivateRoute = ({ children, adminOnly = false }) => {
   const { user, loading, userRole } = useAuth();
@@ -77,6 +78,7 @@ export const AppRoutes = () => {
           <Route path="new-appointment" element={<NewAppointment />} />
           <Route path="profile" element={<Profile />} />
           <Route path="checkout" element={<Checkout />} />
+          <Route path="orders" element={<Orders />} />
         </Route>
 
         {/* Rota para páginas não encontradas */}
