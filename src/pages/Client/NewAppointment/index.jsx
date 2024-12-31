@@ -1,7 +1,7 @@
 // src/pages/Client/NewAppointment/index.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useNotification } from '../../../contexts/NotificationContext';
@@ -22,7 +22,8 @@ import {
   ConfirmationCard,
   Button,
   StepIndicator,
-  IconWrapper
+  IconWrapper,
+  LoadingSpinner
 } from './styles';
 
 const services = [
@@ -62,29 +63,59 @@ export const NewAppointment = () => {
   const [selectedTime, setSelectedTime] = useState('');
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingTimeSlots, setLoadingTimeSlots] = useState(false);
 
   useEffect(() => {
     if (!user) {
+      showError('Você precisa estar logado para fazer um agendamento');
       navigate('/login');
+      return;
     }
-  }, [user, navigate]);
+  }, [user, navigate, showError]);
 
-  useEffect(() => {
-    if (selectedDate) {
-      checkAvailableTimeSlots();
+  const generateTimeSlots = () => {
+    const slots = [];
+    const currentDate = new Date();
+    const selectedDateTime = new Date(selectedDate);
+    const isToday = selectedDateTime.toDateString() === currentDate.toDateString();
+    
+    const startHour = isToday ? currentDate.getHours() + 1 : 8;
+    
+    for (let hour = startHour; hour <= 18; hour++) {
+      for (let minute of ['00', '30']) {
+        if (!(hour === 18 && minute === '30')) {
+          if (isToday) {
+            const currentMinutes = currentDate.getMinutes();
+            if (hour === startHour && parseInt(minute) <= currentMinutes) {
+              continue;
+            }
+          }
+          slots.push(`${hour.toString().padStart(2, '0')}:${minute}`);
+        }
+      }
     }
-  }, [selectedDate]);
+    return slots;
+  };
 
   const checkAvailableTimeSlots = async () => {
+    if (!user || !selectedDate) return;
+
+    setLoadingTimeSlots(true);
     try {
       const appointmentsRef = collection(db, 'appointments');
+      const startOfDay = new Date(selectedDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const endOfDay = new Date(selectedDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
       const q = query(
         appointmentsRef,
         where('date', '==', selectedDate),
         where('status', 'in', ['pending', 'confirmed'])
       );
+
       const querySnapshot = await getDocs(q);
-      
       const bookedSlots = querySnapshot.docs.map(doc => doc.data().time);
       const businessHours = generateTimeSlots();
       const available = businessHours.filter(time => !bookedSlots.includes(time));
@@ -92,21 +123,18 @@ export const NewAppointment = () => {
       setAvailableTimeSlots(available);
     } catch (error) {
       console.error('Erro ao verificar horários disponíveis:', error);
-      showError('Erro ao carregar horários disponíveis.');
+      showError('Erro ao carregar horários disponíveis. Por favor, tente novamente.');
+      setAvailableTimeSlots([]);
+    } finally {
+      setLoadingTimeSlots(false);
     }
   };
 
-  const generateTimeSlots = () => {
-    const slots = [];
-    for (let hour = 8; hour <= 18; hour++) {
-      for (let minute of ['00', '30']) {
-        if (!(hour === 18 && minute === '30')) {
-          slots.push(`${hour.toString().padStart(2, '0')}:${minute}`);
-        }
-      }
+  useEffect(() => {
+    if (selectedDate && user) {
+      checkAvailableTimeSlots();
     }
-    return slots;
-  };
+  }, [selectedDate, user]);
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('pt-BR', {
@@ -131,18 +159,36 @@ export const NewAppointment = () => {
     setCurrentStep(3);
   };
 
+  const validateAppointment = () => {
+    if (!selectedService) {
+      showError('Por favor, selecione um serviço');
+      return false;
+    }
+    if (!selectedDate) {
+      showError('Por favor, selecione uma data');
+      return false;
+    }
+    if (!selectedTime) {
+      showError('Por favor, selecione um horário');
+      return false;
+    }
+    return true;
+  };
+
   const handleConfirm = async () => {
     if (!user) {
-      showError('Você precisa estar logado para fazer um agendamento.');
+      showError('Você precisa estar logado para fazer um agendamento');
       navigate('/login');
       return;
     }
+
+    if (!validateAppointment()) return;
 
     setLoading(true);
     try {
       const appointmentData = {
         userId: user.uid,
-        clientName: user.name || user.email,
+        clientName: user.displayName || user.email,
         clientEmail: user.email,
         service: selectedService.name,
         serviceDuration: selectedService.duration,
@@ -150,27 +196,17 @@ export const NewAppointment = () => {
         date: selectedDate,
         time: selectedTime,
         status: 'pending',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
       };
 
-      // Criar o agendamento
       const docRef = await addDoc(collection(db, 'appointments'), appointmentData);
 
-      // Criar notificação para o usuário
       await createNotification(
         user.uid,
         'Agendamento Realizado',
         `Seu agendamento de ${selectedService.name} foi realizado com sucesso para ${formatDate(selectedDate)} às ${selectedTime}.`,
         'success'
-      );
-
-      // Criar notificação para o admin (você precisará definir o ID do admin)
-      await createNotification(
-        'admin-uid', // Substitua pelo ID real do admin
-        'Novo Agendamento',
-        `Novo agendamento de ${selectedService.name} para ${formatDate(selectedDate)} às ${selectedTime} por ${user.name || user.email}.`,
-        'info'
       );
 
       showSuccess('Agendamento realizado com sucesso!');
@@ -182,6 +218,10 @@ export const NewAppointment = () => {
       setLoading(false);
     }
   };
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Container>
@@ -249,17 +289,21 @@ export const NewAppointment = () => {
               {selectedDate && (
                 <div className="time-select">
                   <label>Horário</label>
-                  <TimeGrid>
-                    {availableTimeSlots.map(time => (
-                      <TimeSlot
-                        key={time}
-                        $selected={selectedTime === time}
-                        onClick={() => handleTimeSelect(time)}
-                      >
-                        {time}
-                      </TimeSlot>
-                    ))}
-                  </TimeGrid>
+                  {loadingTimeSlots ? (
+                    <LoadingSpinner />
+                  ) : (
+                    <TimeGrid>
+                      {availableTimeSlots.map(time => (
+                        <TimeSlot
+                          key={time}
+                          $selected={selectedTime === time}
+                          onClick={() => handleTimeSelect(time)}
+                        >
+                          {time}
+                        </TimeSlot>
+                      ))}
+                    </TimeGrid>
+                  )}
                 </div>
               )}
             </DateTimeContainer>
@@ -300,18 +344,19 @@ export const NewAppointment = () => {
             <Button 
               $variant="secondary"
               onClick={() => setCurrentStep(prev => prev - 1)}
+              disabled={loading}
             >
               Voltar
             </Button>
           )}
-          {currentStep === 3 ? (
+          {currentStep === 3 && (
             <Button 
               onClick={handleConfirm}
               disabled={loading}
             >
               {loading ? 'Confirmando...' : 'Confirmar Agendamento'}
             </Button>
-          ) : null}
+          )}
         </div>
       </FormContainer>
     </Container>
