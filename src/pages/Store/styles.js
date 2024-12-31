@@ -202,7 +202,9 @@ export const CloseButton = styled.button`
   }
 `;
 
-
+export const MobileFilters = styled.div`
+  // Seus estilos aqui
+`;
 
 export const PriceFilter = styled.div`
   display: flex;
