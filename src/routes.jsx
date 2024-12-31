@@ -14,8 +14,9 @@ import { ClientDashboard } from './pages/Client/Dashboard';
 import { ClientAppointments } from './pages/Client/Appointments';
 import { NewAppointment } from './pages/Client/NewAppointment';
 import { Profile } from './pages/Client/Profile';
-import { useAuth } from './contexts/AuthContext';
+import { Checkout } from './pages/Checkout';
 import { Store } from './pages/Store';
+import { useAuth } from './contexts/AuthContext';
 
 const PrivateRoute = ({ children, adminOnly = false }) => {
   const { user, loading, userRole } = useAuth();
@@ -75,6 +76,7 @@ export const AppRoutes = () => {
           <Route path="appointments" element={<ClientAppointments />} />
           <Route path="new-appointment" element={<NewAppointment />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="checkout" element={<Checkout />} />
         </Route>
 
         {/* Rota para páginas não encontradas */}

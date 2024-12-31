@@ -1,9 +1,10 @@
 // src/components/Cart/index.jsx
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
-import { 
-  AiOutlineShoppingCart, 
-  AiOutlinePlus, 
+import {
+  AiOutlineShoppingCart,
+  AiOutlinePlus,
   AiOutlineMinus,
   AiOutlineClose
 } from 'react-icons/ai';
@@ -27,18 +28,19 @@ import {
 } from './styles';
 
 export const Cart = () => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const { 
-    cart, 
-    removeFromCart, 
-    updateQuantity, 
+  const {
+    cart,
+    removeFromCart,
+    updateQuantity,
     getCartTotal,
-    getCartCount 
+    getCartCount
   } = useCart();
 
   const handleCheckout = () => {
-    // Implementar checkout depois
-    console.log('Checkout:', cart);
+    setIsOpen(false);
+    navigate('/client/checkout');
   };
 
   return (
@@ -78,14 +80,14 @@ export const Cart = () => {
                       </ItemPrice>
                     </ItemInfo>
                     <ItemQuantity>
-                      <button 
+                      <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         disabled={item.quantity <= 1}
                       >
                         <AiOutlineMinus />
                       </button>
                       <span>{item.quantity}</span>
-                      <button 
+                      <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       >
                         <AiOutlinePlus />
