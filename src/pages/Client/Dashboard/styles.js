@@ -14,14 +14,28 @@ export const WelcomeCard = styled.div`
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   margin-bottom: 2rem;
 
-  h1 {
-    color: ${({ theme }) => theme.colors.primary};
-    margin-bottom: 0.5rem;
-  }
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
 
-  p {
-    color: ${({ theme }) => theme.colors.text};
-    opacity: 0.8;
+    .icon {
+      font-size: 2.5rem;
+      color: ${({ theme }) => theme.colors.primary};
+      padding: 1rem;
+      background: ${({ theme }) => theme.colors.primary}10;
+      border-radius: 50%;
+    }
+
+    h1 {
+      color: ${({ theme }) => theme.colors.text};
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: ${({ theme }) => theme.colors.text};
+      opacity: 0.7;
+    }
   }
 `;
 
@@ -37,87 +51,159 @@ export const StatCard = styled.div`
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 
-  h3 {
-    color: ${({ theme }) => theme.colors.text};
-    margin-bottom: 1rem;
+  .icon {
+    font-size: 1.5rem;
+    color: ${({ theme }) => theme.colors.primary};
+    padding: 0.75rem;
+    background: ${({ theme }) => theme.colors.primary}10;
+    border-radius: 8px;
   }
 
-  p {
-    color: ${({ theme }) => theme.colors.primary};
-    font-size: 1.2rem;
+  .info {
+    .value {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: ${({ theme }) => theme.colors.text};
+      margin-bottom: 0.25rem;
+    }
+
+    .label {
+      color: ${({ theme }) => theme.colors.text};
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
   }
 `;
 
-export const AppointmentsList = styled.div`
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+export const RecentSection = styled.section`
+  margin-bottom: 2rem;
 
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
+  > p {
+    text-align: center;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: ${({ theme }) => theme.colors.text};
+    opacity: 0.7;
+  }
+`;
 
-    h2 {
-      color: ${({ theme }) => theme.colors.text};
-    }
+export const SectionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  h2 {
+    color: ${({ theme }) => theme.colors.text};
+  }
+`;
+
+export const ViewAllButton = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.colors.primary};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primary}10;
+  }
+
+  svg {
+    font-size: 1.1rem;
   }
 `;
 
 export const AppointmentCard = styled.div`
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+export const OrderCard = styled(AppointmentCard)``;
+
+export const CardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  border: 1px solid #eee;
-  border-radius: 4px;
   margin-bottom: 1rem;
 
   h3 {
     color: ${({ theme }) => theme.colors.text};
-    margin-bottom: 0.5rem;
+    margin: 0;
   }
+`;
 
+export const CardBody = styled.div`
   p {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     color: ${({ theme }) => theme.colors.text};
-    opacity: 0.8;
-  }
+    opacity: 0.7;
+    margin-bottom: 0.5rem;
 
-  .status {
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.875rem;
-    
-    &.pending {
-      background: #f0ad4e;
-      color: white;
+    &:last-child {
+      margin-bottom: 0;
     }
 
-    &.confirmed {
-      background: #5cb85c;
-      color: white;
+    &.price {
+      color: ${({ theme }) => theme.colors.primary};
+      opacity: 1;
+      font-weight: bold;
     }
 
-    &.cancelled {
-      background: #d9534f;
-      color: white;
+    svg {
+      opacity: 0.5;
     }
   }
 `;
 
-export const Button = styled.button`
-  background: ${({ theme }) => theme.colors.primary};
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    opacity: 0.9;
-  }
+export const StatusBadge = styled.span`
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  background: ${({ status, theme }) => {
+    switch (status) {
+      case 'confirmed':
+        return theme.colors.success + '20';
+      case 'cancelled':
+        return theme.colors.error + '20';
+      case 'delivered':
+        return theme.colors.primary + '20';
+      default:
+        return theme.colors.warning + '20';
+    }
+  }};
+  color: ${({ status, theme }) => {
+    switch (status) {
+      case 'confirmed':
+        return theme.colors.success;
+      case 'cancelled':
+        return theme.colors.error;
+      case 'delivered':
+        return theme.colors.primary;
+      default:
+        return theme.colors.warning;
+    }
+  }};
 `;

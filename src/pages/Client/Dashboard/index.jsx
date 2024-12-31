@@ -1,126 +1,218 @@
 // src/pages/Client/Dashboard/index.jsx
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
 import { 
+  AiOutlineShoppingCart, 
+  AiOutlineCalendar,
+  AiOutlineUser,
+  AiOutlineArrowRight
+} from 'react-icons/ai';
+import {
   DashboardContainer,
   WelcomeCard,
   StatsGrid,
   StatCard,
-  AppointmentsList,
+  RecentSection,
+  SectionHeader,
   AppointmentCard,
-  Button
+  OrderCard,
+  CardHeader,
+  CardBody,
+  StatusBadge,
+  ViewAllButton
 } from './styles';
 
 export const ClientDashboard = () => {
   const { user } = useAuth();
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [recentAppointments, setRecentAppointments] = useState([]);
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [stats, setStats] = useState({
+    totalAppointments: 0,
+    totalOrders: 0,
+    totalSpent: 0
+  });
 
   useEffect(() => {
-    loadAppointments();
+    loadDashboardData();
   }, [user]);
 
-  const loadAppointments = async () => {
+  const loadDashboardData = async () => {
     try {
+      // Carregar agendamentos recentes
       const appointmentsRef = collection(db, 'appointments');
-      const q = query(
-        appointmentsRef, 
-        where('clientName', '==', user.name),
-        where('status', '!=', 'cancelled')
+      const appointmentsQuery = query(
+        appointmentsRef,
+        where('userId', '==', user.uid),
+        orderBy('date', 'desc'),
+        limit(3)
       );
-      const querySnapshot = await getDocs(q);
-      
-      const appointmentsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      setAppointments(appointmentsData);
+      const appointmentsSnap = await getDocs(appointmentsQuery);
+      setRecentAppointments(
+        appointmentsSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+      );
+
+      // Carregar pedidos recentes
+      const ordersRef = collection(db, 'orders');
+      const ordersQuery = query(
+        ordersRef,
+        where('userId', '==', user.uid),
+        orderBy('createdAt', 'desc'),
+        limit(3)
+      );
+      const ordersSnap = await getDocs(ordersQuery);
+      setRecentOrders(
+        ordersSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+      );
+
+      // Calcular estatísticas
+      const allOrders = await getDocs(
+        query(ordersRef, where('userId', '==', user.uid))
+      );
+      const allAppointments = await getDocs(
+        query(appointmentsRef, where('userId', '==', user.uid))
+      );
+
+      const totalSpent = allOrders.docs.reduce(
+        (sum, doc) => sum + doc.data().total,
+        0
+      );
+
+      setStats({
+        totalOrders: allOrders.size,
+        totalAppointments: allAppointments.size,
+        totalSpent
+      });
+
     } catch (error) {
-      console.error('Erro ao carregar agendamentos:', error);
-    } finally {
-      setLoading(false);
+      console.error('Erro ao carregar dados do dashboard:', error);
     }
   };
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
+  const formatCurrency = (value) => {
+    return value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
     });
   };
-
-  const getNextAppointment = () => {
-    const now = new Date();
-    return appointments
-      .filter(app => new Date(`${app.date}T${app.time}`) > now)
-      .sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`))[0];
-  };
-
-  const nextAppointment = getNextAppointment();
 
   return (
     <DashboardContainer>
       <WelcomeCard>
-        <h1>Bem-vindo(a), {user?.name}!</h1>
-        <p>Gerencie seus agendamentos e faça novos horários.</p>
+        <div className="user-info">
+          <AiOutlineUser className="icon" />
+          <div>
+            <h1>Bem-vindo(a), {user?.name || 'Cliente'}!</h1>
+            <p>Confira seus agendamentos e pedidos recentes</p>
+          </div>
+        </div>
       </WelcomeCard>
 
       <StatsGrid>
         <StatCard>
-          <h3>Próximo Agendamento</h3>
-          {nextAppointment ? (
-            <>
-              <p>{nextAppointment.service}</p>
-              <p>{formatDate(nextAppointment.date)} às {nextAppointment.time}</p>
-            </>
-          ) : (
-            <p>Nenhum agendamento próximo</p>
-          )}
+          <div className="icon">
+            <AiOutlineCalendar />
+          </div>
+          <div className="info">
+            <span className="value">{stats.totalAppointments}</span>
+            <span className="label">Agendamentos</span>
+          </div>
         </StatCard>
 
         <StatCard>
-          <h3>Total de Agendamentos</h3>
-          <p>{appointments.length}</p>
+          <div className="icon">
+            <AiOutlineShoppingCart />
+          </div>
+          <div className="info">
+            <span className="value">{stats.totalOrders}</span>
+            <span className="label">Pedidos</span>
+          </div>
+        </StatCard>
+
+        <StatCard>
+          <div className="icon">
+            <AiOutlineShoppingCart />
+          </div>
+          <div className="info">
+            <span className="value">{formatCurrency(stats.totalSpent)}</span>
+            <span className="label">Total Gasto</span>
+          </div>
         </StatCard>
       </StatsGrid>
 
-      <AppointmentsList>
-        <div className="header">
-          <h2>Agendamentos Recentes</h2>
-          <Link to="/client/appointments">
-            <Button>Ver Todos</Button>
-          </Link>
-        </div>
+      <RecentSection>
+        <SectionHeader>
+          <h2>Próximos Agendamentos</h2>
+          <ViewAllButton as={Link} to="/client/appointments">
+            Ver Todos <AiOutlineArrowRight />
+          </ViewAllButton>
+        </SectionHeader>
 
-        {loading ? (
-          <p>Carregando...</p>
-        ) : appointments.length > 0 ? (
-          appointments.slice(0, 3).map(appointment => (
+        {recentAppointments.length > 0 ? (
+          recentAppointments.map(appointment => (
             <AppointmentCard key={appointment.id}>
-              <div>
+              <CardHeader>
                 <h3>{appointment.service}</h3>
-                <p>{formatDate(appointment.date)} às {appointment.time}</p>
-              </div>
-              <span className={`status ${appointment.status}`}>
-                {appointment.status === 'pending' && 'Pendente'}
-                {appointment.status === 'confirmed' && 'Confirmado'}
-                {appointment.status === 'cancelled' && 'Cancelado'}
-              </span>
+                <StatusBadge status={appointment.status}>
+                  {appointment.status === 'pending' && 'Pendente'}
+                  {appointment.status === 'confirmed' && 'Confirmado'}
+                  {appointment.status === 'cancelled' && 'Cancelado'}
+                </StatusBadge>
+              </CardHeader>
+              <CardBody>
+                <p>
+                  <AiOutlineCalendar />
+                  {formatDate(appointment.date)} às {appointment.time}
+                </p>
+              </CardBody>
             </AppointmentCard>
           ))
         ) : (
-          <p>Nenhum agendamento encontrado</p>
+          <p>Nenhum agendamento recente</p>
         )}
+      </RecentSection>
 
-        <Link to="/client/new-appointment">
-          <Button>Fazer Novo Agendamento</Button>
-        </Link>
-      </AppointmentsList>
+      <RecentSection>
+        <SectionHeader>
+          <h2>Pedidos Recentes</h2>
+          <ViewAllButton as={Link} to="/client/orders">
+            Ver Todos <AiOutlineArrowRight />
+          </ViewAllButton>
+        </SectionHeader>
+
+        {recentOrders.length > 0 ? (
+          recentOrders.map(order => (
+            <OrderCard key={order.id}>
+              <CardHeader>
+                <h3>Pedido #{order.id.slice(-6)}</h3>
+                <StatusBadge status={order.status}>
+                  {order.status === 'pending' && 'Pendente'}
+                  {order.status === 'confirmed' && 'Confirmado'}
+                  {order.status === 'delivered' && 'Entregue'}
+                </StatusBadge>
+              </CardHeader>
+              <CardBody>
+                <p>{order.items.length} {order.items.length === 1 ? 'item' : 'itens'}</p>
+                <p className="price">{formatCurrency(order.total)}</p>
+              </CardBody>
+            </OrderCard>
+          ))
+        ) : (
+          <p>Nenhum pedido recente</p>
+        )}
+      </RecentSection>
     </DashboardContainer>
   );
 };
