@@ -1,22 +1,23 @@
 // src/pages/Store/index.jsx
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
-import { useNotification } from '../../contexts/NotificationContext';
 import { useCart } from '../../contexts/CartContext';
+import { useNotification } from '../../contexts/NotificationContext';
 import { 
   AiOutlineSearch, 
   AiOutlineFilter,
-  AiOutlineShoppingCart
+  AiOutlineShoppingCart,
+  AiOutlineDollar,
+  AiOutlineStar
 } from 'react-icons/ai';
 import {
   StoreContainer,
   Header,
   SearchSection,
   SearchBar,
-  FilterSection,
-  CategoryFilter,
-  PriceFilter,
+  FiltersContainer,
+  FilterGroup,
   ProductsGrid,
   ProductCard,
   ProductImage,
@@ -24,46 +25,56 @@ import {
   ProductPrice,
   AddToCartButton,
   EmptyState,
-  LoadingState
+  LoadingState,
+  SortSelect,
+  PriceRangeFilter,
+  CategoryFilter,
+  FilterButton,
+  MobileFilters,
+  CloseButton
 } from './styles';
 
 export const Store = () => {
+  const { addToCart } = useCart();
+  const { showSuccess } = useNotification();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
-  const { showError } = useNotification();
-  const { addToCart } = useCart();
+  const [sortBy, setSortBy] = useState('name');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     loadProducts();
   }, []);
 
-  
   const loadProducts = async () => {
     try {
       const productsRef = collection(db, 'products');
-      const q = query(productsRef, where('stock', '>', 0));
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(productsRef);
       
       const productsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
 
+      // Extrair categorias únicas
+      const uniqueCategories = [...new Set(productsData.map(product => product.category))];
+      setCategories(['all', ...uniqueCategories]);
+      
       setProducts(productsData);
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
-      showError('Erro ao carregar produtos');
     } finally {
       setLoading(false);
     }
   };
 
-  const getCategories = () => {
-    const categories = new Set(products.map(product => product.category));
-    return ['all', ...Array.from(categories)];
+  const handleAddToCart = (product) => {
+    addToCart(product);
+    showSuccess('Produto adicionado ao carrinho!');
   };
 
   const filterProducts = () => {
@@ -83,20 +94,25 @@ export const Store = () => {
         (!priceRange.max || product.price <= Number(priceRange.max));
 
       return matchesSearch && matchesCategory && matchesPrice;
+    }).sort((a, b) => {
+      switch (sortBy) {
+        case 'price-asc':
+          return a.price - b.price;
+        case 'price-desc':
+          return b.price - a.price;
+        case 'name':
+          return a.name.localeCompare(b.name);
+        default:
+          return 0;
+      }
     });
   };
 
-  const handleAddToCart = (product) => {
-    addToCart(product);
-    // Implementar adição ao carrinho depois
-    console.log('Adicionar ao carrinho:', product);
-  };
+  const filteredProducts = filterProducts();
 
   if (loading) {
     return <LoadingState>Carregando produtos...</LoadingState>;
   }
-
-  const filteredProducts = filterProducts();
 
   return (
     <StoreContainer>
@@ -114,42 +130,66 @@ export const Store = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </SearchBar>
+
+        <FilterButton onClick={() => setShowMobileFilters(true)}>
+          <AiOutlineFilter />
+          Filtros
+        </FilterButton>
       </SearchSection>
 
-      <FilterSection>
-        <CategoryFilter>
-          <AiOutlineFilter />
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
-            <option value="all">Todas as Categorias</option>
-            {getCategories()
-              .filter(cat => cat !== 'all')
-              .map(category => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-          </select>
-        </CategoryFilter>
+      <FiltersContainer $showMobile={showMobileFilters}>
+        <div className="filters-content">
+          <CloseButton onClick={() => setShowMobileFilters(false)}>
+            ×
+          </CloseButton>
 
-        <PriceFilter>
-          <input
-            type="number"
-            placeholder="Preço mín"
-            value={priceRange.min}
-            onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
-          />
-          <span>até</span>
-          <input
-            type="number"
-            placeholder="Preço máx"
-            value={priceRange.max}
-            onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
-          />
-        </PriceFilter>
-      </FilterSection>
+          <FilterGroup>
+            <h3>Ordenar por</h3>
+            <SortSelect
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="name">Nome</option>
+              <option value="price-asc">Menor Preço</option>
+              <option value="price-desc">Maior Preço</option>
+            </SortSelect>
+          </FilterGroup>
+
+          <FilterGroup>
+            <h3>Categoria</h3>
+            <CategoryFilter>
+              {categories.map(category => (
+                <button
+                  key={category}
+                  className={selectedCategory === category ? 'active' : ''}
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {category === 'all' ? 'Todas' : category}
+                </button>
+              ))}
+            </CategoryFilter>
+          </FilterGroup>
+
+          <FilterGroup>
+            <h3>Faixa de Preço</h3>
+            <PriceRangeFilter>
+              <input
+                type="number"
+                placeholder="Min"
+                value={priceRange.min}
+                onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+              />
+              <span>até</span>
+              <input
+                type="number"
+                placeholder="Max"
+                value={priceRange.max}
+                onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+              />
+            </PriceRangeFilter>
+          </FilterGroup>
+        </div>
+      </FiltersContainer>
 
       {filteredProducts.length > 0 ? (
         <ProductsGrid>
@@ -159,9 +199,9 @@ export const Store = () => {
                 <img src={product.imageUrl} alt={product.name} />
               </ProductImage>
               <ProductInfo>
+                <span className="category">{product.category}</span>
                 <h3>{product.name}</h3>
-                <p className="category">{product.category}</p>
-                <p className="description">{product.description}</p>
+                <p>{product.description}</p>
                 <ProductPrice>
                   {product.price.toLocaleString('pt-BR', {
                     style: 'currency',

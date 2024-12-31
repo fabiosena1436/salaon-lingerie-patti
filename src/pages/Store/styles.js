@@ -50,28 +50,159 @@ export const FilterSection = styled.div`
   flex-wrap: wrap;
 `;
 
-export const CategoryFilter = styled.div`
-  display: flex;
-  align-items: center;
+export const FiltersContainer = styled.div`
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 300px;
   background: white;
-  padding: 0.75rem 1rem;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 2rem;
+  box-shadow: -2px 0 4px rgba(0,0,0,0.1);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 1000;
 
-  svg {
-    color: ${({ theme }) => theme.colors.text};
-    opacity: 0.5;
-    margin-right: 0.5rem;
+  ${({ $showMobile }) =>
+    $showMobile &&
+    css`
+      transform: translateX(0);
+    `}
+
+  .filters-content {
+    height: 100%;
+    overflow-y: auto;
   }
 
-  select {
-    border: none;
-    font-size: 1rem;
-    outline: none;
-    background: transparent;
-    cursor: pointer;
+  @media (min-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    position: static;
+    width: auto;
+    transform: none;
+    box-shadow: none;
+    padding: 0;
+    margin-bottom: 2rem;
+
+    .filters-content {
+      display: flex;
+      gap: 2rem;
+      height: auto;
+      overflow: visible;
+    }
   }
 `;
+
+export const FilterGroup = styled.div`
+  margin-bottom: 2rem;
+
+  h3 {
+    color: ${({ theme }) => theme.colors.text};
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    margin-bottom: 0;
+  }
+`;
+
+export const SortSelect = styled.select`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+export const CategoryFilter = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: ${({ theme }) => theme.colors.primary};
+    }
+
+    &.active {
+      background: ${({ theme }) => theme.colors.primary};
+      color: white;
+      border-color: ${({ theme }) => theme.colors.primary};
+    }
+  }
+`;
+
+export const PriceRangeFilter = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  input {
+    width: 100px;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+
+    &:focus {
+      outline: none;
+      border-color: ${({ theme }) => theme.colors.primary};
+    }
+  }
+
+  span {
+    color: ${({ theme }) => theme.colors.text};
+    opacity: 0.7;
+  }
+`;
+
+export const FilterButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: white;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: pointer;
+  color: ${({ theme }) => theme.colors.text};
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    display: none;
+  }
+`;
+
+export const CloseButton = styled.button`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: ${({ theme }) => theme.colors.text};
+  padding: 0.5rem;
+
+  @media (min-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    display: none;
+  }
+`;
+
+
 
 export const PriceFilter = styled.div`
   display: flex;
