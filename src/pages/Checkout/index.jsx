@@ -1,6 +1,6 @@
 // src/pages/Checkout/index.jsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -257,6 +257,16 @@ export const Checkout = () => {
           <SubmitButton type="submit" disabled={loading}>
             {loading ? 'Processando...' : 'Finalizar Compra'}
           </SubmitButton>
+          <SubmitButton type="submit" disabled={loading}>
+          <NavLink 
+          to="/store"
+          className={({ isActive }) => isActive ? 'active' : ''}
+        >
+        Continuar comprando 
+        </NavLink>
+          </SubmitButton>
+
+
         </PaymentForm>
 
         <OrderSummary>

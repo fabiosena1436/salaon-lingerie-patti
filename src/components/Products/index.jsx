@@ -14,6 +14,11 @@ import {
 } from './styles';
 
 export const Products = () => {
+
+  const handleViewAllProducts = () => {
+    window.location.href = '/store';
+   } // substitua '/store' pelo caminho real da rota store
+
   const products = [
     {
       id: 1,
@@ -65,7 +70,9 @@ export const Products = () => {
         ))}
       </ProductsGrid>
       <ViewAllButton>
-        <Button variant="secondary">Ver Todos os Produtos</Button>
+      <Button variant="secondary" onClick={handleViewAllProducts}>
+          Ver Todos os Produtos
+        </Button>
       </ViewAllButton>
     </ProductsContainer>
   );

@@ -8,7 +8,8 @@ import {
   AiOutlineUser,
   AiOutlineLogout,
   AiOutlineMenu,
-  AiOutlineClose
+  AiOutlineClose,
+  AiOutlineHome
 } from 'react-icons/ai';
 import { useAuth } from '../../../contexts/AuthContext';
 import {
@@ -31,6 +32,11 @@ export const Sidebar = () => {
   const { user, logout } = useAuth();
 
   const menuItems = [
+    {
+      path: '/',
+      icon: <AiOutlineHome />,
+      label: 'Home'
+    },
     {
       path: '/admin',
       icon: <AiOutlineDashboard />,

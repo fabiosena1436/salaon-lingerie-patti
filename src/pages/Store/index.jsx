@@ -4,8 +4,9 @@ import { collection, query, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useCart } from '../../contexts/CartContext';
 import { useNotification } from '../../contexts/NotificationContext';
-import { 
-  AiOutlineSearch, 
+import { ProductDetailsModal } from '../../components/ProductDetails';
+import {
+  AiOutlineSearch,
   AiOutlineFilter,
   AiOutlineShoppingCart,
   AiOutlineDollar,
@@ -45,7 +46,7 @@ export const Store = () => {
   const [sortBy, setSortBy] = useState('name');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [categories, setCategories] = useState([]);
-
+  const [selectedProduct, setSelectedProduct] = useState(null);
   useEffect(() => {
     loadProducts();
   }, []);
@@ -54,7 +55,7 @@ export const Store = () => {
     try {
       const productsRef = collection(db, 'products');
       const querySnapshot = await getDocs(productsRef);
-      
+
       const productsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -63,7 +64,7 @@ export const Store = () => {
       // Extrair categorias únicas
       const uniqueCategories = [...new Set(productsData.map(product => product.category))];
       setCategories(['all', ...uniqueCategories]);
-      
+
       setProducts(productsData);
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
@@ -80,16 +81,16 @@ export const Store = () => {
   const filterProducts = () => {
     return products.filter(product => {
       // Filtro de busca
-      const matchesSearch = 
+      const matchesSearch =
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.description.toLowerCase().includes(searchTerm.toLowerCase());
 
       // Filtro de categoria
-      const matchesCategory = 
+      const matchesCategory =
         selectedCategory === 'all' || product.category === selectedCategory;
 
       // Filtro de preço
-      const matchesPrice = 
+      const matchesPrice =
         (!priceRange.min || product.price >= Number(priceRange.min)) &&
         (!priceRange.max || product.price <= Number(priceRange.max));
 
@@ -194,7 +195,8 @@ export const Store = () => {
       {filteredProducts.length > 0 ? (
         <ProductsGrid>
           {filteredProducts.map(product => (
-            <ProductCard key={product.id}>
+            <ProductCard key={product.id} onClick={() => setSelectedProduct(product)}>
+
               <ProductImage>
                 <img src={product.imageUrl} alt={product.name} />
               </ProductImage>
@@ -208,18 +210,31 @@ export const Store = () => {
                     currency: 'BRL'
                   })}
                 </ProductPrice>
-                <AddToCartButton onClick={() => handleAddToCart(product)}>
-                  <AiOutlineShoppingCart />
+                <AddToCartButton
+                  onClick={(e) => {
+                    e.stopPropagation(); 
+                    handleAddToCart(product);
+                  }}
+                >
                   Adicionar ao Carrinho
                 </AddToCartButton>
               </ProductInfo>
             </ProductCard>
           ))}
         </ProductsGrid>
+
       ) : (
+
         <EmptyState>
           <p>Nenhum produto encontrado</p>
         </EmptyState>
+      )}
+
+      {selectedProduct && (
+        <ProductDetailsModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+        />
       )}
     </StoreContainer>
   );

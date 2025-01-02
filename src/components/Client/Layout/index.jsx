@@ -35,6 +35,12 @@ export const ClientLayout = () => {
         >
           Meu Perfil
         </NavLink>
+        <NavLink 
+          to="/"
+          className={({ isActive }) => isActive ? 'active' : ''}
+        >
+         Home
+        </NavLink>
       </ClientNav>
       <MainContent>
         <Outlet />

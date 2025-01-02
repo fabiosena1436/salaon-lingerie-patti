@@ -1,5 +1,6 @@
 // src/components/Services/index.jsx
-import { MdSpa, MdContentCut, MdFace } from 'react-icons/md'; // Usando Material Icons
+import { MdSpa,  MdFaceUnlock } from 'react-icons/md'; // Usando Material Icons
+import { BiWinkSmile } from "react-icons/bi";
 import {
   ServicesContainer,
   ServicesTitle,
@@ -18,13 +19,13 @@ export const Services = () => {
       description: 'Cuidados completos para suas unhas com os melhores produtos.'
     },
     {
-      icon: <MdContentCut />,
-      title: 'Corte & Penteado',
-      description: 'Transforme seu visual com nossos especialistas.'
+      icon: <BiWinkSmile />,
+      title: 'Depilação',
+      description: 'Transforme seu visual '
     },
     {
-      icon: <MdFace />,
-      title: 'Tratamentos',
+      icon: <MdFaceUnlock />,
+      title: 'Desginer de Sobrancelhas',
       description: 'Tratamentos especiais para sua beleza.'
     }
   ];
