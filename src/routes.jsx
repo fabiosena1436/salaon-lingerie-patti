@@ -18,6 +18,7 @@ import { Checkout } from './pages/Checkout';
 import { Store } from './pages/Store';
 import { useAuth } from './contexts/AuthContext';
 import { Orders } from './pages/Client/Orders';
+import { ServiceDetail } from './components/ServiceDetail';
 
 const PrivateRoute = ({ children, adminOnly = false }) => {
   const { user, loading, userRole } = useAuth();
@@ -48,6 +49,7 @@ export const AppRoutes = () => {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="/servicos/:serviceId" element={<ServiceDetail />} />
         </Route>
 
         {/* Rotas do Admin */}

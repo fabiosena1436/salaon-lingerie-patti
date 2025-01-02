@@ -1,6 +1,6 @@
 // src/components/Banner/styles.js
 import styled from 'styled-components';
-import bannerBg from '../../assets/banner-lang.png'; // Você precisará adicionar esta imagem
+import bannerBg from '../../assets/banner-lang.png';
 
 export const BannerContainer = styled.div`
   width: 100%;
@@ -13,6 +13,8 @@ export const BannerContainer = styled.div`
   align-items: center;
   justify-content: center;
   padding: 0 1rem;
+
+ 
 `;
 
 export const BannerContent = styled.div`

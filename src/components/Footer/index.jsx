@@ -42,14 +42,12 @@ export const Footer = () => {
               <Link to="/servicos">Serviços</Link>
             </FooterListItem>
             <FooterListItem>
-              <Link to="/produtos">Produtos</Link>
+              <Link to="/store">Produtos</Link>
             </FooterListItem>
             <FooterListItem>
-              <Link to="/agendamento">Agendamento</Link>
+              <Link to="/client/new-appointment">Agendamento</Link>
             </FooterListItem>
-            <FooterListItem>
-              <Link to="/contato">Contato</Link>
-            </FooterListItem>
+           
           </FooterList>
         </FooterSection>
 
@@ -86,7 +84,7 @@ export const Footer = () => {
 
       <FooterBottom>
         <FooterRights>
-          © 2024 Salão & Lingerie. Todos os direitos reservados.
+          © 2024 Salão & Lingerie. Todos os direitos reservados, feito com dedicação por Fabio Sena.
         </FooterRights>
       </FooterBottom>
     </FooterContainer>

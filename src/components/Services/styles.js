@@ -4,6 +4,7 @@ import styled from 'styled-components';
 export const ServicesContainer = styled.section`
   padding: 4rem 2rem;
   background: ${({ theme }) => theme.colors.background};
+  cursor: pointer;
 `;
 
 export const ServicesTitle = styled.h2`
