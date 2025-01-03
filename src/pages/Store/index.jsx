@@ -1,6 +1,6 @@
 // src/pages/Store/index.jsx
 import { useState, useEffect } from 'react';
-import { collection, query, getDocs } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useCart } from '../../contexts/CartContext';
 import { useNotification } from '../../contexts/NotificationContext';
@@ -8,9 +8,7 @@ import { ProductDetailsModal } from '../../components/ProductDetails';
 import {
   AiOutlineSearch,
   AiOutlineFilter,
-  AiOutlineShoppingCart,
-  AiOutlineDollar,
-  AiOutlineStar
+ 
 } from 'react-icons/ai';
 import {
   StoreContainer,
@@ -31,7 +29,6 @@ import {
   PriceRangeFilter,
   CategoryFilter,
   FilterButton,
-  MobileFilters,
   CloseButton
 } from './styles';
 
