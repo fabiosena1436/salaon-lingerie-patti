@@ -1,5 +1,5 @@
 // src/pages/Store/index.jsx
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useCart } from '../../contexts/CartContext';
@@ -8,7 +8,7 @@ import { ProductDetailsModal } from '../../components/ProductDetails';
 import {
   AiOutlineSearch,
   AiOutlineFilter,
-  AiOutlineWarning
+ 
 } from 'react-icons/ai';
 import {
   StoreContainer,
@@ -29,78 +29,62 @@ import {
   PriceRangeFilter,
   CategoryFilter,
   FilterButton,
-  CloseButton,
-  ErrorState
+  CloseButton
 } from './styles';
 
 export const Store = () => {
   const { addToCart } = useCart();
-  const { showSuccess, showError } = useNotification();
+  const { showSuccess } = useNotification();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [sortBy, setSortBy] = useState('name');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [categories, setCategories] = useState(['all']);
+  const [categories, setCategories] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  useEffect(() => {
+    loadProducts();
+  }, []);
 
-  const loadProducts = useCallback(async () => {
+  const loadProducts = async () => {
     try {
-      setLoading(true);
-      setError(null);
       const productsRef = collection(db, 'products');
       const querySnapshot = await getDocs(productsRef);
 
-      if (!querySnapshot.empty) {
-        const productsData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+      const productsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
 
-        // Extrair e ordenar categorias únicas
-        const uniqueCategories = [...new Set(productsData.map(product => product.category))].sort();
-        setCategories(['all', ...uniqueCategories]);
-        setProducts(productsData);
-      } else {
-        setProducts([]);
-        showError('Nenhum produto encontrado');
-      }
+      // Extrair categorias únicas
+      const uniqueCategories = [...new Set(productsData.map(product => product.category))];
+      setCategories(['all', ...uniqueCategories]);
+
+      setProducts(productsData);
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
-      setError('Erro ao carregar produtos. Por favor, tente novamente.');
-      showError('Erro ao carregar produtos');
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  };
 
-  useEffect(() => {
-    loadProducts();
-  }, [loadProducts]);
+  const handleAddToCart = (product) => {
+    addToCart(product);
+    showSuccess('Produto adicionado ao carrinho!');
+  };
 
-  const handleAddToCart = useCallback((product, event) => {
-    if (event) {
-      event.stopPropagation();
-    }
-    try {
-      addToCart(product);
-      showSuccess('Produto adicionado ao carrinho!');
-    } catch (error) {
-      showError('Erro ao adicionar produto ao carrinho');
-    }
-  }, [addToCart, showSuccess, showError]);
-
-  const filterProducts = useCallback(() => {
+  const filterProducts = () => {
     return products.filter(product => {
       // Filtro de busca
-      const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch =
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchTerm.toLowerCase());
 
       // Filtro de categoria
-      const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+      const matchesCategory =
+        selectedCategory === 'all' || product.category === selectedCategory;
 
       // Filtro de preço
       const matchesPrice =
@@ -115,26 +99,17 @@ export const Store = () => {
         case 'price-desc':
           return b.price - a.price;
         case 'name':
-        default:
           return a.name.localeCompare(b.name);
+        default:
+          return 0;
       }
     });
-  }, [products, searchTerm, selectedCategory, priceRange, sortBy]);
+  };
 
   const filteredProducts = filterProducts();
 
   if (loading) {
     return <LoadingState>Carregando produtos...</LoadingState>;
-  }
-
-  if (error) {
-    return (
-      <ErrorState>
-        <AiOutlineWarning />
-        <p>{error}</p>
-        <button onClick={loadProducts}>Tentar novamente</button>
-      </ErrorState>
-    );
   }
 
   return (
@@ -217,36 +192,26 @@ export const Store = () => {
       {filteredProducts.length > 0 ? (
         <ProductsGrid>
           {filteredProducts.map(product => (
-            <ProductCard 
-              key={product.id} 
-              onClick={() => setSelectedProduct(product)}
-            >
+            <ProductCard key={product.id} onClick={() => setSelectedProduct(product)}>
+
               <ProductImage>
-                {product.imageUrl ? (
-                  <img 
-                    src={product.imageUrl} 
-                    alt={product.name}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = '/placeholder-image.jpg'; // Imagem padrão
-                    }}
-                  />
-                ) : (
-                  <div className="no-image">Sem imagem</div>
-                )}
+                <img src={product.imageUrl} alt={product.name} />
               </ProductImage>
               <ProductInfo>
                 <span className="category">{product.category}</span>
                 <h3>{product.name}</h3>
                 <p>{product.description}</p>
                 <ProductPrice>
-                  {product.price?.toLocaleString('pt-BR', {
+                  {product.price.toLocaleString('pt-BR', {
                     style: 'currency',
                     currency: 'BRL'
                   })}
                 </ProductPrice>
                 <AddToCartButton
-                  onClick={(e) => handleAddToCart(product, e)}
+                  onClick={(e) => {
+                    e.stopPropagation(); 
+                    handleAddToCart(product);
+                  }}
                 >
                   Adicionar ao Carrinho
                 </AddToCartButton>
@@ -254,7 +219,9 @@ export const Store = () => {
             </ProductCard>
           ))}
         </ProductsGrid>
+
       ) : (
+
         <EmptyState>
           <p>Nenhum produto encontrado</p>
         </EmptyState>
@@ -264,7 +231,6 @@ export const Store = () => {
         <ProductDetailsModal
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
-          onAddToCart={(e) => handleAddToCart(selectedProduct, e)}
         />
       )}
     </StoreContainer>
