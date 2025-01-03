@@ -1,20 +1,14 @@
 // src/pages/Admin/Appointments/index.jsx
 import { useState, useEffect } from 'react';
-import { 
-  collection, 
-  query, 
-  getDocs, 
-  updateDoc, 
-  doc, 
-  orderBy, 
-  where 
-} from 'firebase/firestore';
-import { db } from '../../../services/firebase';
+import { Link } from 'react-router-dom';
+import { useAppointments } from '../../../contexts/AppointmentContext';
+import { useNotification } from '../../../contexts/NotificationContext';
 import { 
   AiOutlineCheck, 
   AiOutlineClose,
   AiOutlineSearch,
-  AiOutlineCalendar
+  AiOutlineCalendar,
+  AiOutlinePlus 
 } from 'react-icons/ai';
 import {
   Container,
@@ -34,60 +28,25 @@ import {
   LoadingState
 } from './styles';
 
-export const Appointments  = () => {
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
+export const Appointments = () => {
+  const { appointments, loading, loadAppointments, updateAppointment } = useAppointments();
+  const { showSuccess, showError } = useNotification();
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
 
   useEffect(() => {
     loadAppointments();
-  }, [selectedDate]);
-
-  const loadAppointments = async () => {
-    try {
-      let appointmentsQuery = collection(db, 'appointments');
-      
-      if (selectedDate) {
-        appointmentsQuery = query(
-          appointmentsQuery,
-          where('date', '==', selectedDate),
-          orderBy('time')
-        );
-      } else {
-        appointmentsQuery = query(
-          appointmentsQuery,
-          orderBy('date', 'desc'),
-          orderBy('time')
-        );
-      }
-
-      const querySnapshot = await getDocs(appointmentsQuery);
-      const appointmentsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-
-      setAppointments(appointmentsData);
-    } catch (error) {
-      console.error('Erro ao carregar agendamentos:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, []);
 
   const handleStatusUpdate = async (appointmentId, newStatus) => {
     try {
-      await updateDoc(doc(db, 'appointments', appointmentId), {
-        status: newStatus,
-        updatedAt: new Date().toISOString()
-      });
-
+      await updateAppointment(appointmentId, { status: newStatus });
+      showSuccess(`Status atualizado com sucesso!`);
       await loadAppointments();
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
-      alert('Erro ao atualizar status. Tente novamente.');
+      showError('Erro ao atualizar status do agendamento');
     }
   };
 
@@ -117,24 +76,36 @@ export const Appointments  = () => {
     return statusTexts[status] || 'Pendente';
   };
 
-  const filteredAppointments = appointments
-    .filter(appointment => {
-      // Filtro por status
-      if (activeTab !== 'all' && appointment.status !== activeTab) {
-        return false;
-      }
+  const filteredAppointments = appointments.filter(appointment => {
+    // Filtro por status
+    if (activeTab !== 'all' && appointment.status !== activeTab) {
+      return false;
+    }
 
-      // Filtro por busca
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase();
-        return (
-          appointment.clientName.toLowerCase().includes(searchLower) ||
-          appointment.service.toLowerCase().includes(searchLower)
-        );
-      }
+    // Filtro por data
+    if (selectedDate && appointment.date !== selectedDate) {
+      return false;
+    }
 
-      return true;
-    });
+    // Filtro por busca
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const nameMatch = appointment.clientName?.toLowerCase().includes(searchLower);
+      const emailMatch = appointment.clientEmail?.toLowerCase().includes(searchLower);
+      const serviceMatch = appointment.service?.toLowerCase().includes(searchLower);
+      
+      return nameMatch || emailMatch || serviceMatch;
+    }
+
+    return true;
+  });
+
+  // Ordenar por data e hora
+  const sortedAppointments = [...filteredAppointments].sort((a, b) => {
+    const dateA = new Date(`${a.date}T${a.time}`);
+    const dateB = new Date(`${b.date}T${b.time}`);
+    return dateB - dateA; // Ordem decrescente
+  });
 
   if (loading) {
     return <LoadingState>Carregando agendamentos...</LoadingState>;
@@ -143,7 +114,18 @@ export const Appointments  = () => {
   return (
     <Container>
       <Header>
-        <h1>Gerenciar Agendamentos</h1>
+        <div>
+          <h1>Gerenciar Agendamentos</h1>
+          <p>{sortedAppointments.length} agendamentos encontrados</p>
+        </div>
+        <div>
+          <Link to="/admin/appointments/new">
+            <Button>
+              <AiOutlinePlus />
+              Novo Agendamento
+            </Button>
+          </Link>
+        </div>
       </Header>
 
       <FilterSection>
@@ -203,8 +185,8 @@ export const Appointments  = () => {
       </FilterTabs>
 
       <AppointmentsList>
-        {filteredAppointments.length > 0 ? (
-          filteredAppointments.map(appointment => (
+        {sortedAppointments.length > 0 ? (
+          sortedAppointments.map(appointment => (
             <AppointmentCard key={appointment.id}>
               <AppointmentInfo>
                 <div className="client-info">

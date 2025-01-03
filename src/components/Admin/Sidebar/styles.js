@@ -1,106 +1,112 @@
 // src/components/Admin/Sidebar/styles.js
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
 export const SidebarContainer = styled.aside`
-  width: 250px;
-  background: white;
-  height: 100vh;
-  padding: 1rem;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
   position: fixed;
   left: 0;
   top: 0;
+  bottom: 0;
+  width: 250px;
+  background: white;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease;
+  z-index: 1000;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    transform: translateX(${({ isOpen }) => (isOpen ? '0' : '-100%')});
-    z-index: 1000;
+    transform: translateX(${({ $isOpen }) => ($isOpen ? '0' : '-100%')});
   }
 `;
 
 export const SidebarHeader = styled.div`
+  padding: 1.5rem;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 2rem;
+  align-items: center;
+  border-bottom: 1px solid #eee;
 `;
 
 export const Logo = styled.div`
-  font-size: 1.5rem;
-  font-weight: bold;
-  
   a {
     color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
+    font-weight: bold;
+    font-size: 1.2rem;
   }
 `;
 
 export const CloseButton = styled.button`
-  display: none;
   background: none;
   border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
   color: ${({ theme }) => theme.colors.text};
+  cursor: pointer;
+  display: none;
+  font-size: 1.2rem;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
     display: block;
   }
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary};
+  }
 `;
 
-export const NavLinks = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
+export const NavLinks = styled.nav`
   flex: 1;
+  padding: 1.5rem 0;
+  overflow-y: auto;
 `;
 
-export const NavItem = styled.li`
+export const NavItem = styled.div`
   margin-bottom: 0.5rem;
 `;
 
 export const NavLink = styled(Link)`
   display: flex;
   align-items: center;
-  padding: 0.75rem 1rem;
-  color: ${({ theme, $active }) => $active ? theme.colors.primary : theme.colors.text};
+  padding: 0.75rem 1.5rem;
+  color: ${({ $active, theme }) => 
+    $active ? theme.colors.primary : theme.colors.text};
   text-decoration: none;
-  border-radius: 4px;
   transition: all 0.2s;
-  background: ${({ $active }) => $active ? 'rgba(255, 105, 180, 0.1)' : 'transparent'};
-
-  &:hover {
-    background: rgba(255, 105, 180, 0.1);
-  }
+  background: ${({ $active, theme }) => 
+    $active ? theme.colors.primary + '10' : 'transparent'};
 
   svg {
     margin-right: 0.75rem;
     font-size: 1.2rem;
   }
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primary + '10'};
+    color: ${({ theme }) => theme.colors.primary};
+  }
 `;
 
 export const UserInfo = styled.div`
-  padding: 1rem;
+  padding: 1.5rem;
   border-top: 1px solid #eee;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem; // Reduzindo o tamanho da fonte
-  flex-wrap: wrap; // Permite quebra de linha
-  margin-top: auto; // Empurra para o final do sidebar
 
-  svg {
-    color: ${({ theme }) => theme.colors.primary};
-  }
+  .user-details {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: ${({ theme }) => theme.colors.text};
 
-  span {
-    white-space: nowrap; // Evita quebra no meio do email
-    overflow: hidden;
-    text-overflow: ellipsis; // Adiciona ... quando o texto é muito longo
-    max-width: 150px; // Limita a largura do email
+    svg {
+      font-size: 1.2rem;
+    }
+
+    span {
+      font-size: 0.9rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 `;
 
@@ -108,28 +114,26 @@ export const LogoutButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
   background: none;
-  border: none;
+  border: 1px solid ${({ theme }) => theme.colors.error};
   color: ${({ theme }) => theme.colors.error};
+  border-radius: 4px;
   cursor: pointer;
-  padding: 0.5rem;
-  font-size: 0.9rem; // Reduzindo o tamanho da fonte
-  width: 100%; // Ocupa toda a largura
-  justify-content: center; // Centraliza o conteúdo
-  margin-top: 0.5rem; // Adiciona espaço acima do botão
+  transition: all 0.2s;
 
   &:hover {
-    opacity: 0.8;
-    background: rgba(255, 0, 0, 0.1); // Adiciona um fundo sutil no hover
+    background: ${({ theme }) => theme.colors.error};
+    color: white;
   }
 
   svg {
-    font-size: 1.1rem; // Ajusta o tamanho do ícone
+    font-size: 1.2rem;
   }
 `;
 
 export const MobileToggle = styled.button`
-  display: none;
   position: fixed;
   top: 1rem;
   left: 1rem;
@@ -138,11 +142,20 @@ export const MobileToggle = styled.button`
   border: none;
   border-radius: 4px;
   padding: 0.5rem;
-  font-size: 1.5rem;
-  cursor: pointer;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: none;
+  color: ${({ theme }) => theme.colors.text};
+  cursor: pointer;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
     display: block;
+  }
+
+  svg {
+    font-size: 1.5rem;
+  }
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary};
   }
 `;

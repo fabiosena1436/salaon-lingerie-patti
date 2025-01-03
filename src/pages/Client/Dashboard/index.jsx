@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useAppointments } from '../../../contexts/AppointmentContext'; // Adicione esta importação
 import { 
   AiOutlineShoppingCart, 
   AiOutlineCalendar,
@@ -27,6 +28,7 @@ import {
 
 export const ClientDashboard = () => {
   const { user } = useAuth();
+  const { loadAppointments } = useAppointments(); // Adicione este hook
   const [recentAppointments, setRecentAppointments] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
   const [stats, setStats] = useState({
@@ -36,7 +38,9 @@ export const ClientDashboard = () => {
   });
 
   useEffect(() => {
-    loadDashboardData();
+    if (user) {
+      loadDashboardData();
+    }
   }, [user]);
 
   const loadDashboardData = async () => {
@@ -50,13 +54,19 @@ export const ClientDashboard = () => {
         limit(3)
       );
       const appointmentsSnap = await getDocs(appointmentsQuery);
-      setRecentAppointments(
-        appointmentsSnap.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
-      );
+      const appointmentsData = appointmentsSnap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setRecentAppointments(appointmentsData);
 
+      // Carregar todos os agendamentos para estatísticas
+      const allAppointmentsQuery = query(
+        appointmentsRef,
+        where('userId', '==', user.uid)
+      );
+      const allAppointmentsSnap = await getDocs(allAppointmentsQuery);
+      
       // Carregar pedidos recentes
       const ordersRef = collection(db, 'orders');
       const ordersQuery = query(
@@ -66,29 +76,38 @@ export const ClientDashboard = () => {
         limit(3)
       );
       const ordersSnap = await getDocs(ordersQuery);
-      setRecentOrders(
-        ordersSnap.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
-      );
+      const ordersData = ordersSnap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setRecentOrders(ordersData);
 
       // Calcular estatísticas
-      const allOrders = await getDocs(
-        query(ordersRef, where('userId', '==', user.uid))
+      const allOrdersQuery = query(
+        ordersRef,
+        where('userId', '==', user.uid)
       );
-      const allAppointments = await getDocs(
-        query(appointmentsRef, where('userId', '==', user.uid))
-      );
+      const allOrdersSnap = await getDocs(allOrdersQuery);
 
-      const totalSpent = allOrders.docs.reduce(
-        (sum, doc) => sum + doc.data().total,
-        0
-      );
+      let totalSpent = 0;
+      allOrdersSnap.docs.forEach(doc => {
+        const orderData = doc.data();
+        if (orderData.total) {
+          totalSpent += orderData.total;
+        }
+      });
+
+      // Adicionar valor dos agendamentos ao total gasto
+      allAppointmentsSnap.docs.forEach(doc => {
+        const appointmentData = doc.data();
+        if (appointmentData.servicePrice) {
+          totalSpent += appointmentData.servicePrice;
+        }
+      });
 
       setStats({
-        totalOrders: allOrders.size,
-        totalAppointments: allAppointments.size,
+        totalAppointments: allAppointmentsSnap.size,
+        totalOrders: allOrdersSnap.size,
         totalSpent
       });
 
@@ -108,13 +127,19 @@ export const ClientDashboard = () => {
     });
   };
 
+  // Filtrar apenas agendamentos futuros e não cancelados
+  const upcomingAppointments = recentAppointments.filter(appointment => {
+    const appointmentDate = new Date(`${appointment.date}T${appointment.time}`);
+    return appointmentDate > new Date() && appointment.status !== 'cancelled';
+  });
+
   return (
     <DashboardContainer>
       <WelcomeCard>
         <div className="user-info">
           <AiOutlineUser className="icon" />
           <div>
-            <h1>Bem-vindo(a), {user?.name || 'Cliente'}!</h1>
+            <h1>Bem-vindo(a), {user?.displayName || 'Cliente'}!</h1>
             <p>Confira seus agendamentos e pedidos recentes</p>
           </div>
         </div>
@@ -160,8 +185,8 @@ export const ClientDashboard = () => {
           </ViewAllButton>
         </SectionHeader>
 
-        {recentAppointments.length > 0 ? (
-          recentAppointments.map(appointment => (
+        {upcomingAppointments.length > 0 ? (
+          upcomingAppointments.map(appointment => (
             <AppointmentCard key={appointment.id}>
               <CardHeader>
                 <h3>{appointment.service}</h3>
@@ -176,11 +201,16 @@ export const ClientDashboard = () => {
                   <AiOutlineCalendar />
                   {formatDate(appointment.date)} às {appointment.time}
                 </p>
+                {appointment.servicePrice && (
+                  <p className="price">
+                    {formatCurrency(appointment.servicePrice)}
+                  </p>
+                )}
               </CardBody>
             </AppointmentCard>
           ))
         ) : (
-          <p>Nenhum agendamento recente</p>
+          <p>Nenhum agendamento próximo</p>
         )}
       </RecentSection>
 
@@ -204,8 +234,8 @@ export const ClientDashboard = () => {
                 </StatusBadge>
               </CardHeader>
               <CardBody>
-                <p>{order.items.length} {order.items.length === 1 ? 'item' : 'itens'}</p>
-                <p className="price">{formatCurrency(order.total)}</p>
+                <p>{order.items?.length || 0} {order.items?.length === 1 ? 'item' : 'itens'}</p>
+                <p className="price">{formatCurrency(order.total || 0)}</p>
               </CardBody>
             </OrderCard>
           ))

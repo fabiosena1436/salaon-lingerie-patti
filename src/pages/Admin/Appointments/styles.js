@@ -6,10 +6,22 @@ export const Container = styled.div`
 `;
 
 export const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
 
-  h1 {
-    color: ${({ theme }) => theme.colors.text};
+  div {
+    h1 {
+      color: ${({ theme }) => theme.colors.text};
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: ${({ theme }) => theme.colors.text};
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
   }
 `;
 

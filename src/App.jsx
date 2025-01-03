@@ -8,6 +8,7 @@ import { AppRoutes } from './routes';
 import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { CartProvider } from './contexts/CartContext';
+import { AppointmentProvider } from './contexts/AppointmentContext'; // Nova importação
 
 function App() {
   return (
@@ -15,23 +16,25 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <NotificationProvider>
-            <GlobalStyle />
-            <AppRoutes />
-            <ToastContainer
-              position="top-right"
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="colored"
-              style={{ zIndex: 9999 }}
-            />
+            <AppointmentProvider> {/* Novo provider */}
+              <GlobalStyle />
+              <AppRoutes />
+              <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="colored"
+                style={{ zIndex: 9999 }}
+              />
+            </AppointmentProvider>
           </NotificationProvider>
-          </CartProvider>
+        </CartProvider>
       </AuthProvider>
     </ThemeProvider>
   );

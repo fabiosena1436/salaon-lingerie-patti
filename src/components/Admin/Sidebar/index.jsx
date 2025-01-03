@@ -69,7 +69,7 @@ export const Sidebar = () => {
         {isOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
       </MobileToggle>
 
-      <SidebarContainer isOpen={isOpen}>
+      <SidebarContainer $isOpen={isOpen}>
         <SidebarHeader>
           <Logo>
             <Link to="/admin">Painel Admin</Link>
@@ -95,7 +95,7 @@ export const Sidebar = () => {
         </NavLinks>
 
         <UserInfo>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
+          <div className="user-details">
             <AiOutlineUser />
             <span>{user?.email}</span>
           </div>

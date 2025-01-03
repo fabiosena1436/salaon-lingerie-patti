@@ -10,6 +10,7 @@ import { ForgotPassword } from './pages/Auth/ForgotPassword';
 import { Dashboard } from './pages/Admin/Dashboard';
 import { Products } from './pages/Admin/Products';
 import { Appointments } from './pages/Admin/Appointments';
+import { NewAdminAppointment } from './pages/Admin/Appointments/NewAdminAppointment';
 import { ClientDashboard } from './pages/Client/Dashboard';
 import { ClientAppointments } from './pages/Client/Appointments';
 import { NewAppointment } from './pages/Client/NewAppointment';
@@ -64,6 +65,7 @@ export const AppRoutes = () => {
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
           <Route path="appointments" element={<Appointments />} />
+          <Route path="appointments/new" element={<NewAdminAppointment />} />
         </Route>
 
         {/* Rotas do Cliente */}
