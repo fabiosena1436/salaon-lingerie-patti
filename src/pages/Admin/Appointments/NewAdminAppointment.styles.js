@@ -1,8 +1,12 @@
 // src/pages/Admin/Appointments/NewAdminAppointment.styles.js
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+const spin = keyframes`
+  to { transform: rotate(360deg); }
+`;
 
 export const Container = styled.div`
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 
@@ -101,39 +105,61 @@ export const BookedSlot = styled(TimeSlot)`
 
   &:hover {
     transform: none;
+    border-color: #ddd;
   }
 `;
 
-export const ClientSearch = styled.div`
-  position: relative;
-`;
-
-export const ClientList = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  max-height: 300px;
+export const ClientsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+  max-height: 400px;
   overflow-y: auto;
-  z-index: 1000;
+  padding: 0.5rem;
+  background: ${({ theme }) => theme.colors.background};
+  border-radius: 4px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.colors.primary}50;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: ${({ theme }) => theme.colors.primary}80;
+  }
 `;
 
 export const ClientCard = styled.div`
   padding: 1rem;
+  background: white;
+  border: 2px solid ${({ $selected, theme }) => 
+    $selected ? theme.colors.primary : '#eee'};
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  box-shadow: ${({ $selected }) => 
+    $selected ? '0 4px 6px rgba(0,0,0,0.1)' : 'none'};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.primary}10;
+    border-color: ${({ theme }) => theme.colors.primary};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
 
   h4 {
     margin: 0 0 0.5rem;
     color: ${({ theme }) => theme.colors.text};
+    font-size: 1.1rem;
   }
 
   p {
@@ -141,10 +167,49 @@ export const ClientCard = styled.div`
     font-size: 0.9rem;
     color: ${({ theme }) => theme.colors.text};
     opacity: 0.7;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &:not(:last-child) {
+      margin-bottom: 0.5rem;
+    }
+
+    svg {
+      font-size: 1.1rem;
+      color: ${({ theme }) => theme.colors.primary};
+      opacity: 0.8;
+    }
+  }
+`;
+
+export const SearchBar = styled.div`
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+  svg {
+    color: ${({ theme }) => theme.colors.text};
+    opacity: 0.5;
+    margin-right: 0.75rem;
+    font-size: 1.2rem;
   }
 
-  & + & {
-    border-top: 1px solid #eee;
+  input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    color: ${({ theme }) => theme.colors.text};
+
+    &::placeholder {
+      color: ${({ theme }) => theme.colors.text}80;
+    }
   }
 `;
 
@@ -158,14 +223,55 @@ export const Button = styled.button`
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 
   &:hover:not(:disabled) {
     opacity: 0.9;
+    transform: translateY(-2px);
   }
 
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
   }
+
+  svg {
+    font-size: 1.2rem;
+  }
+`;
+
+export const LoadingState = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 1.1rem;
+
+  &::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    margin-left: 1rem;
+    border: 2px solid ${({ theme }) => theme.colors.primary}40;
+    border-top: 2px solid ${({ theme }) => theme.colors.primary};
+    border-radius: 50%;
+    animation: ${spin} 1s linear infinite;
+  }
+`;
+
+export const EmptyState = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: ${({ theme }) => theme.colors.text};
+  opacity: 0.7;
+  background: white;
+  border-radius: 8px;
+  border: 2px dashed #eee;
+  grid-column: 1 / -1;
 `;

@@ -10,7 +10,8 @@ import {
   AiOutlineClockCircle,
   AiOutlineUser,
   AiOutlinePhone,
-  AiOutlineMail
+  AiOutlineMail,
+  AiOutlineSearch
 } from 'react-icons/ai';
 import {
   Container,
@@ -23,45 +24,12 @@ import {
   TimeGrid,
   TimeSlot,
   BookedSlot,
-  ClientSearch,
-  ClientList,
-  ClientCard
+  ClientsGrid,
+  ClientCard,
+  SearchBar,
+  LoadingState,
+  EmptyState
 } from './NewAdminAppointment.styles';
-
-const searchClients = async (term) => {
-  if (term.length < 3) {
-    setSearchResults([]);
-    return;
-  }
-
-  try {
-    const usersRef = collection(db, 'users');
-    // Primeiro, buscamos todos os clientes
-    const clientsQuery = query(
-      usersRef,
-      where('role', '==', 'client')
-    );
-    
-    const querySnapshot = await getDocs(clientsQuery);
-    
-    // Depois filtramos localmente pelo nome
-    const clients = querySnapshot.docs
-      .map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-      .filter(client => 
-        client.name?.toLowerCase().includes(term.toLowerCase()) ||
-        client.email?.toLowerCase().includes(term.toLowerCase())
-      )
-      .slice(0, 5); // Limitamos a 5 resultados para melhor performance
-    
-    setSearchResults(clients);
-  } catch (error) {
-    console.error('Erro ao buscar clientes:', error);
-    showError('Erro ao buscar clientes. Por favor, tente novamente.');
-  }
-};
 
 const services = [
   {
@@ -105,13 +73,63 @@ export const NewAdminAppointment = () => {
     userId: ''
   });
   
-  const [bookedSlots, setBookedSlots] = useState([]);
-  const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [filteredClients, setFilteredClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+  const [bookedSlots, setBookedSlots] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingClients, setLoadingClients] = useState(true);
+  const [selectedClientId, setSelectedClientId] = useState(null);
 
-  // Gerar horários disponíveis (8h às 18h, intervalos de 30min)
+  // Carregar todos os clientes ao montar o componente
+  useEffect(() => {
+    const loadClients = async () => {
+      try {
+        setLoadingClients(true);
+        const clientsRef = collection(db, 'users');
+        const q = query(
+          clientsRef,
+          where('role', '==', 'client')
+        );
+        
+        const snapshot = await getDocs(q);
+        
+        if (!snapshot.empty) {
+          const clientsData = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          console.log('Clientes carregados:', clientsData);
+          setClients(clientsData);
+          setFilteredClients(clientsData);
+        } else {
+          console.log('Nenhum cliente encontrado');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar clientes:', error);
+        showError('Erro ao carregar lista de clientes');
+      } finally {
+        setLoadingClients(false);
+      }
+    };
+
+    loadClients();
+  }, []);
+
+  // Filtrar clientes quando o termo de busca mudar
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredClients(clients);
+    } else {
+      const filtered = clients.filter(client => 
+        client.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.phone?.includes(searchTerm)
+      );
+      setFilteredClients(filtered);
+    }
+  }, [searchTerm, clients]);
+
   const generateTimeSlots = () => {
     const slots = [];
     for (let hour = 8; hour <= 18; hour++) {
@@ -124,7 +142,12 @@ export const NewAdminAppointment = () => {
     return slots;
   };
 
-  // Carregar horários ocupados para a data selecionada
+  useEffect(() => {
+    if (formData.date) {
+      loadBookedSlots(formData.date);
+    }
+  }, [formData.date]);
+
   const loadBookedSlots = async (date) => {
     try {
       const appointmentsRef = collection(db, 'appointments');
@@ -143,73 +166,21 @@ export const NewAdminAppointment = () => {
       }));
       
       setBookedSlots(booked);
-      
-      // Atualizar horários disponíveis
-      const allSlots = generateTimeSlots();
-      const available = allSlots.filter(
-        time => !booked.some(slot => slot.time === time)
-      );
-      setAvailableTimeSlots(available);
     } catch (error) {
       console.error('Erro ao carregar horários ocupados:', error);
       showError('Erro ao verificar horários disponíveis');
     }
   };
 
-  // Buscar clientes
-  const searchClients = async (term) => {
-    if (term.length < 3) {
-      setSearchResults([]);
-      return;
-    }
-
-    try {
-      const usersRef = collection(db, 'users');
-      const q = query(
-        usersRef,
-        where('role', '==', 'client'),
-        where('name', '>=', term),
-        where('name', '<=', term + '\uf8ff')
-      );
-      
-      const querySnapshot = await getDocs(q);
-      const clients = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      setSearchResults(clients);
-    } catch (error) {
-      console.error('Erro ao buscar clientes:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (formData.date) {
-      loadBookedSlots(formData.date);
-    }
-  }, [formData.date]);
-
-  useEffect(() => {
-    if (searchTerm) {
-      const delayDebounceFn = setTimeout(() => {
-        searchClients(searchTerm);
-      }, 300);
-
-      return () => clearTimeout(delayDebounceFn);
-    }
-  }, [searchTerm]);
-
   const handleClientSelect = (client) => {
+    setSelectedClientId(client.id);
     setFormData(prev => ({
       ...prev,
-      clientName: client.name,
+      clientName: client.name || client.email,
       clientEmail: client.email,
-      clientPhone: client.phone,
+      clientPhone: client.phone || '',
       userId: client.id
     }));
-    setSearchResults([]);
-    setSearchTerm('');
   };
 
   const handleSubmit = async (e) => {
@@ -222,15 +193,21 @@ export const NewAdminAppointment = () => {
 
     try {
       setLoading(true);
+      const selectedService = services.find(s => s.name === formData.service);
+      
       await createAppointment({
         ...formData,
-        status: 'confirmed', // Agendamentos criados pelo admin já são confirmados
-        createdBy: 'admin'
+        servicePrice: selectedService?.price || 0,
+        serviceDuration: selectedService?.duration || '60',
+        status: 'confirmed',
+        createdBy: 'admin',
+        createdAt: new Date().toISOString()
       });
       
       showSuccess('Agendamento criado com sucesso!');
       navigate('/admin/appointments');
     } catch (error) {
+      console.error('Erro ao criar agendamento:', error);
       showError('Erro ao criar agendamento');
     } finally {
       setLoading(false);
@@ -245,33 +222,54 @@ export const NewAdminAppointment = () => {
         <FormGroup>
           <Label>
             <AiOutlineUser />
-            Buscar Cliente
+            Selecionar Cliente
           </Label>
-          <ClientSearch>
-            <Input
+          <SearchBar>
+            <AiOutlineSearch />
+            <input
               type="text"
+              placeholder="Buscar cliente por nome, email ou telefone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Digite o nome do cliente..."
             />
-            {searchResults.length > 0 && (
-              <ClientList>
-                {searchResults.map(client => (
+          </SearchBar>
+          
+          {loadingClients ? (
+            <LoadingState>Carregando clientes...</LoadingState>
+          ) : (
+            <ClientsGrid>
+              {filteredClients.length > 0 ? (
+                filteredClients.map(client => (
                   <ClientCard
                     key={client.id}
+                    $selected={selectedClientId === client.id}
                     onClick={() => handleClientSelect(client)}
                   >
-                    <h4>{client.name}</h4>
-                    <p>{client.email}</p>
-                    <p>{client.phone}</p>
+                    <h4>{client.name || client.email}</h4>
+                    <p>
+                      <AiOutlineMail />
+                      {client.email}
+                    </p>
+                    {client.phone && (
+                      <p>
+                        <AiOutlinePhone />
+                        {client.phone}
+                      </p>
+                    )}
                   </ClientCard>
-                ))}
-              </ClientList>
-            )}
-          </ClientSearch>
+                ))
+              ) : (
+                <EmptyState>
+                  {searchTerm 
+                    ? 'Nenhum cliente encontrado com este termo de busca' 
+                    : 'Nenhum cliente cadastrado'}
+                </EmptyState>
+              )}
+            </ClientsGrid>
+          )}
         </FormGroup>
 
-        {formData.clientName && (
+        {selectedClientId && (
           <>
             <FormGroup>
               <Label>Serviço</Label>
@@ -286,7 +284,7 @@ export const NewAdminAppointment = () => {
                 <option value="">Selecione um serviço</option>
                 {services.map(service => (
                   <option key={service.id} value={service.name}>
-                    {service.name} - {service.duration}min - R${service.price}
+                    {service.name} - {service.duration}min - R${service.price.toFixed(2)}
                   </option>
                 ))}
               </Select>
@@ -303,7 +301,7 @@ export const NewAdminAppointment = () => {
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
                   date: e.target.value,
-                  time: '' // Resetar horário ao mudar a data
+                  time: ''
                 }))}
                 min={new Date().toISOString().split('T')[0]}
                 required
@@ -321,7 +319,10 @@ export const NewAdminAppointment = () => {
                     const isBooked = bookedSlots.find(slot => slot.time === time);
                     if (isBooked) {
                       return (
-                        <BookedSlot key={time} title={`${isBooked.clientName} - ${isBooked.service}`}>
+                        <BookedSlot 
+                          key={time} 
+                          title={`${isBooked.clientName} - ${isBooked.service}`}
+                        >
                           {time}
                         </BookedSlot>
                       );
@@ -331,6 +332,7 @@ export const NewAdminAppointment = () => {
                         key={time}
                         $selected={formData.time === time}
                         onClick={() => setFormData(prev => ({ ...prev, time }))}
+                        type="button"
                       >
                         {time}
                       </TimeSlot>
@@ -349,5 +351,3 @@ export const NewAdminAppointment = () => {
     </Container>
   );
 };
-
-export default NewAdminAppointment;
