@@ -14,7 +14,8 @@ import {
   MobileIcon,
   ButtonContainer,
   NavLink,
-  MobileContainer
+  MobileContainer,
+  CartContainer
 } from './styles';
 
 export const Header = () => {
@@ -54,13 +55,6 @@ export const Header = () => {
         <Link to="/" onClick={closeMenu}>Salão & Lingerie</Link>
       </Logo>
 
-      <MobileContainer>
-        <Cart />
-        <MobileIcon onClick={toggleMenu}>
-          {isOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-        </MobileIcon>
-      </MobileContainer>
-
       <Nav $isOpen={isOpen}>
         <NavLinks>
           <li>
@@ -86,6 +80,10 @@ export const Header = () => {
             </NavLink>
           </li>
         </NavLinks>
+      </Nav>
+
+      <CartContainer>
+        <Cart />
         <ButtonContainer>
           {user ? (
             <>
@@ -116,8 +114,14 @@ export const Header = () => {
             </Button>
           )}
         </ButtonContainer>
-      </Nav>
+      </CartContainer>
+
+      <MobileContainer>
+        <Cart />
+        <MobileIcon onClick={toggleMenu}>
+          {isOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+        </MobileIcon>
+      </MobileContainer>
     </HeaderContainer>
   );
 };
-

@@ -25,13 +25,13 @@ export const Logo = styled.div`
   }
 `;
 
-export const MobileContainer = styled.div`
-  display: none;
+export const CartContainer = styled.div`
+  display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 2rem;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    display: flex;
+    display: none;
   }
 `;
 
@@ -39,6 +39,7 @@ export const Nav = styled.nav`
   display: flex;
   align-items: center;
   gap: 2rem;
+  margin-right: auto;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
     display: ${({ $isOpen }) => ($isOpen ? 'flex' : 'none')};
@@ -84,6 +85,16 @@ export const MobileIcon = styled.div`
   
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
     display: block;
+  }
+`;
+
+export const MobileContainer = styled.div`
+  display: none;
+  align-items: center;
+  gap: 1rem;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    display: flex;
   }
 `;
 
