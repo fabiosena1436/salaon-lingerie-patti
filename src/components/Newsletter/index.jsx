@@ -43,20 +43,9 @@ export const Newsletter = () => {
       <NewsletterContent>
         <NewsletterTitle>Fique por dentro das novidades</NewsletterTitle>
         <NewsletterText>
-          Cadastre-se para receber ofertas exclusivas e novidades!
+          Aqui voce encontra ofertas exclusivas!
         </NewsletterText>
-        <NewsletterForm onSubmit={handleSubmit}>
-          <NewsletterInput 
-            type="email" 
-            placeholder="Digite seu melhor e-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            aria-label="Digite seu e-mail para newsletter"
-          />
-          <Button type="submit" $fullWidth>
-            Cadastrar
-          </Button>
-        </NewsletterForm>
+       
         {status.message && (
           <NewsletterMessage $type={status.type}>
             {status.message}
