@@ -72,6 +72,7 @@ export const FiltersContainer = styled.div`
   transform: translateX(100%);
   transition: transform 0.3s ease;
   z-index: 1000;
+  
 
   ${({ $showMobile }) =>
     $showMobile &&
@@ -108,6 +109,8 @@ export const FilterGroup = styled.div`
     color: ${({ theme }) => theme.colors.text};
     margin-bottom: 1rem;
     font-size: 1rem;
+    margin-top: 1rem;
+    margin-left: 1rem;
   }
 
   @media (min-width: ${({ theme }) => theme.breakpoints.desktop}) {
