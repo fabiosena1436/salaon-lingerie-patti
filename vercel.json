@@ -1,21 +1,28 @@
 {
-    "rewrites": [
-      { "source": "/(.*)", "destination": "/index.html" }
-    ],
-    "headers": [
-      {
-        "source": "/(.*)",
-        "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
-        ]
-      }
-    ],
-    "env": {
-      "VITE_FIREBASE_API_KEY": "@vite_firebase_api_key",
-      "VITE_FIREBASE_AUTH_DOMAIN": "@vite_firebase_auth_domain",
-      "VITE_FIREBASE_PROJECT_ID": "@vite_firebase_project_id",
-      "VITE_FIREBASE_STORAGE_BUCKET": "@vite_firebase_storage_bucket",
-      "VITE_FIREBASE_MESSAGING_SENDER_ID": "@vite_firebase_messaging_sender_id",
-      "VITE_FIREBASE_APP_ID": "@vite_firebase_app_id"
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-Requested-With, Content-Type, Authorization"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
     }
-  }
+  ]
+}

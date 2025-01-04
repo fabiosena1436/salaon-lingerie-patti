@@ -1,4 +1,3 @@
-// src/services/firebase.js
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
@@ -13,17 +12,29 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+// Verificação das variáveis de ambiente
+Object.entries(firebaseConfig).forEach(([key, value]) => {
+  if (!value) {
+    console.error(`Variável de ambiente ${key} não está configurada`);
+  }
+});
 
-// Adicione esta função para verificar a conexão
-export const checkFirebaseConnection = () => {
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// Função para verificar conexão
+const checkFirebaseConnection = async () => {
   try {
-    return app != null;
+    await db.terminate();
+    await db.enableNetwork();
+    console.log('Conexão com Firebase estabelecida');
+    return true;
   } catch (error) {
-    console.error("Erro na conexão Firebase:", error);
+    console.error('Erro na conexão Firebase:', error);
     return false;
   }
 };
+
+export { auth, db, storage, checkFirebaseConnection };
