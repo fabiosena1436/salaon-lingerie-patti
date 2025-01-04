@@ -21,6 +21,8 @@ import { Store } from './pages/Store';
 import { useAuth } from './contexts/AuthContext';
 import { Orders } from './pages/Client/Orders';
 import { ServiceDetail } from './components/ServiceDetail';
+import { ServicesPage } from './pages/Services';
+
 
 // Componente de Loading
 const LoadingSpinner = () => (
@@ -75,6 +77,7 @@ export const AppRoutes = () => {
               path="forgot-password" 
               element={user ? <Navigate to="/" /> : <ForgotPassword />} 
             />
+             <Route path="/servicos" element={<ServicesPage />} />
             <Route path="servicos/:serviceId" element={<ServiceDetail />} />
           </Route>
 
