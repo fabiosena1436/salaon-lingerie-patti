@@ -1,5 +1,6 @@
 // src/routes.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Suspense, lazy } from 'react'; // Adicione isso
 import { Layout } from './components/Layout';
 import { AdminLayout } from './components/Admin/Layout';
 import { ClientLayout } from './components/Client/Layout';
@@ -21,15 +22,27 @@ import { useAuth } from './contexts/AuthContext';
 import { Orders } from './pages/Client/Orders';
 import { ServiceDetail } from './components/ServiceDetail';
 
+// Componente de Loading
+const LoadingSpinner = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '100vh' 
+  }}>
+    Carregando...
+  </div>
+);
+
 const PrivateRoute = ({ children, adminOnly = false }) => {
   const { user, loading, userRole } = useAuth();
 
   if (loading) {
-    return <div>Carregando...</div>;
+    return <LoadingSpinner />;
   }
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" state={{ from: window.location.pathname }} />;
   }
 
   if (adminOnly && userRole !== 'admin') {
@@ -40,54 +53,67 @@ const PrivateRoute = ({ children, adminOnly = false }) => {
 };
 
 export const AppRoutes = () => {
+  const { user } = useAuth();
+
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Rotas Públicas */}
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="store" element={<Store />} />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
-          <Route path="forgot-password" element={<ForgotPassword />} />
-          <Route path="/servicos/:serviceId" element={<ServiceDetail />} />
-        </Route>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>
+          {/* Rotas Públicas */}
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="store" element={<Store />} />
+            <Route 
+              path="login" 
+              element={user ? <Navigate to="/" /> : <Login />} 
+            />
+            <Route 
+              path="register" 
+              element={user ? <Navigate to="/" /> : <Register />} 
+            />
+            <Route 
+              path="forgot-password" 
+              element={user ? <Navigate to="/" /> : <ForgotPassword />} 
+            />
+            <Route path="servicos/:serviceId" element={<ServiceDetail />} />
+          </Route>
 
-        {/* Rotas do Admin */}
-        <Route
-          path="/admin"
-          element={
-            <PrivateRoute adminOnly>
-              <AdminLayout />
-            </PrivateRoute>
-          }
-        >
-          <Route index element={<Dashboard />} />
-          <Route path="products" element={<Products />} />
-          <Route path="appointments" element={<Appointments />} />
-          <Route path="appointments/new" element={<NewAdminAppointment />} />
-        </Route>
+          {/* Rotas do Admin */}
+          <Route
+            path="/admin"
+            element={
+              <PrivateRoute adminOnly>
+                <AdminLayout />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="products" element={<Products />} />
+            <Route path="appointments" element={<Appointments />} />
+            <Route path="appointments/new" element={<NewAdminAppointment />} />
+          </Route>
 
-        {/* Rotas do Cliente */}
-        <Route
-          path="/client"
-          element={
-            <PrivateRoute>
-              <ClientLayout />
-            </PrivateRoute>
-          }
-        >
-          <Route index element={<ClientDashboard />} />
-          <Route path="appointments" element={<ClientAppointments />} />
-          <Route path="new-appointment" element={<NewAppointment />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="checkout" element={<Checkout />} />
-          <Route path="orders" element={<Orders />} />
-        </Route>
+          {/* Rotas do Cliente */}
+          <Route
+            path="/client"
+            element={
+              <PrivateRoute>
+                <ClientLayout />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<ClientDashboard />} />
+            <Route path="appointments" element={<ClientAppointments />} />
+            <Route path="new-appointment" element={<NewAppointment />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="checkout" element={<Checkout />} />
+            <Route path="orders" element={<Orders />} />
+          </Route>
 
-        {/* Rota para páginas não encontradas */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Rota para páginas não encontradas */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 };

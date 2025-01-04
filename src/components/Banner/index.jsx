@@ -1,5 +1,7 @@
 // src/components/Banner/index.jsx
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { toast } from 'react-toastify';
 import { Button } from '../Button';
 import { 
   BannerContainer, 
@@ -11,13 +13,19 @@ import {
 
 export const Banner = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleViewAllProducts = () => {
     navigate('/store');
   };
 
   const handleViewAllAgendaments = () => {
-    navigate('/client/new-appointment');
+    if (!user) {
+      toast.info('Faça login para agendar um horário');
+      navigate('/login', { state: { from: '/client/new-appointment' } });
+    } else {
+      navigate('/client/new-appointment');
+    }
   };
 
   return (
