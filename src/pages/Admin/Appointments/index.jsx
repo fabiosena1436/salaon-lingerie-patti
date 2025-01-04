@@ -25,7 +25,13 @@ import {
   Button,
   DateFilter,
   EmptyState,
-  LoadingState
+  LoadingState,
+  HeaderTitle,
+  HeaderActions,
+  AppointmentDetails,
+  ClientInfo,
+  ServiceInfo,
+  Price
 } from './styles';
 
 export const Appointments = () => {
@@ -77,34 +83,23 @@ export const Appointments = () => {
   };
 
   const filteredAppointments = appointments.filter(appointment => {
-    // Filtro por status
-    if (activeTab !== 'all' && appointment.status !== activeTab) {
-      return false;
-    }
-
-    // Filtro por data
-    if (selectedDate && appointment.date !== selectedDate) {
-      return false;
-    }
-
-    // Filtro por busca
+    if (activeTab !== 'all' && appointment.status !== activeTab) return false;
+    if (selectedDate && appointment.date !== selectedDate) return false;
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
-      const nameMatch = appointment.clientName?.toLowerCase().includes(searchLower);
-      const emailMatch = appointment.clientEmail?.toLowerCase().includes(searchLower);
-      const serviceMatch = appointment.service?.toLowerCase().includes(searchLower);
-      
-      return nameMatch || emailMatch || serviceMatch;
+      return (
+        appointment.clientName?.toLowerCase().includes(searchLower) ||
+        appointment.clientEmail?.toLowerCase().includes(searchLower) ||
+        appointment.service?.toLowerCase().includes(searchLower)
+      );
     }
-
     return true;
   });
 
-  // Ordenar por data e hora
   const sortedAppointments = [...filteredAppointments].sort((a, b) => {
     const dateA = new Date(`${a.date}T${a.time}`);
     const dateB = new Date(`${b.date}T${b.time}`);
-    return dateB - dateA; // Ordem decrescente
+    return dateB - dateA;
   });
 
   if (loading) {
@@ -114,18 +109,18 @@ export const Appointments = () => {
   return (
     <Container>
       <Header>
-        <div>
+        <HeaderTitle>
           <h1>Gerenciar Agendamentos</h1>
           <p>{sortedAppointments.length} agendamentos encontrados</p>
-        </div>
-        <div>
+        </HeaderTitle>
+        <HeaderActions>
           <Link to="/admin/appointments/new">
             <Button>
               <AiOutlinePlus />
               Novo Agendamento
             </Button>
           </Link>
-        </div>
+        </HeaderActions>
       </Header>
 
       <FilterSection>
@@ -189,22 +184,22 @@ export const Appointments = () => {
           sortedAppointments.map(appointment => (
             <AppointmentCard key={appointment.id}>
               <AppointmentInfo>
-                <div className="client-info">
+                <ClientInfo>
                   <h3>{appointment.clientName}</h3>
                   <p>{appointment.clientEmail}</p>
-                </div>
-                <div className="service-info">
+                </ClientInfo>
+                <ServiceInfo>
                   <h4>{appointment.service}</h4>
-                  <p>
+                  <AppointmentDetails>
                     {formatDate(appointment.date)} às {appointment.time}
-                  </p>
-                  <p className="price">
+                  </AppointmentDetails>
+                  <Price>
                     {appointment.servicePrice?.toLocaleString('pt-BR', {
                       style: 'currency',
                       currency: 'BRL'
                     })}
-                  </p>
-                </div>
+                  </Price>
+                </ServiceInfo>
                 <StatusBadge color={getStatusColor(appointment.status)}>
                   {getStatusText(appointment.status)}
                 </StatusBadge>
