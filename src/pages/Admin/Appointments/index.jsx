@@ -1,4 +1,3 @@
-// src/pages/Admin/Appointments/index.jsx
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppointments } from '../../../contexts/AppointmentContext';
@@ -83,23 +82,19 @@ export const Appointments = () => {
   };
 
   const filteredAppointments = appointments.filter(appointment => {
-    if (activeTab !== 'all' && appointment.status !== activeTab) return false;
-    if (selectedDate && appointment.date !== selectedDate) return false;
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        appointment.clientName?.toLowerCase().includes(searchLower) ||
-        appointment.clientEmail?.toLowerCase().includes(searchLower) ||
-        appointment.service?.toLowerCase().includes(searchLower)
-      );
-    }
-    return true;
+    const matchesTab = activeTab === 'all' || appointment.status === activeTab;
+    const matchesDate = !selectedDate || appointment.date === selectedDate;
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = !searchTerm || 
+      appointment.clientName?.toLowerCase().includes(searchLower) ||
+      appointment.clientEmail?.toLowerCase().includes(searchLower) ||
+      appointment.service?.toLowerCase().includes(searchLower);
+
+    return matchesTab && matchesDate && matchesSearch;
   });
 
   const sortedAppointments = [...filteredAppointments].sort((a, b) => {
-    const dateA = new Date(`${a.date}T${a.time}`);
-    const dateB = new Date(`${b.date}T${b.time}`);
-    return dateB - dateA;
+    return new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`);
   });
 
   if (loading) {
@@ -117,7 +112,7 @@ export const Appointments = () => {
           <Link to="/admin/appointments/new">
             <Button>
               <AiOutlinePlus />
-              Novo Agendamento
+              <span>Novo Agendamento</span>
             </Button>
           </Link>
         </HeaderActions>
@@ -212,14 +207,14 @@ export const Appointments = () => {
                     onClick={() => handleStatusUpdate(appointment.id, 'confirmed')}
                   >
                     <AiOutlineCheck />
-                    Confirmar
+                    <span>Confirmar</span>
                   </Button>
                   <Button 
                     $variant="danger"
                     onClick={() => handleStatusUpdate(appointment.id, 'cancelled')}
                   >
                     <AiOutlineClose />
-                    Cancelar
+                    <span>Cancelar</span>
                   </Button>
                 </AppointmentActions>
               )}
