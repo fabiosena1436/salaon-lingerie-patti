@@ -18,7 +18,7 @@ export const Banner = () => {
    }
 
    const handleViewAllAgendaments = () => {
-    window.location.href = '/products';
+    window.location.href = '/client/new-appointment';
    }
 
 
