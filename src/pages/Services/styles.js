@@ -53,6 +53,10 @@ export const CategoryFilter = styled.div`
       color: white;
     }
   }
+
+  @media (max-width: 768px) {
+  flex-direction: column;
+  }
 `;
 
 export const ServicesGrid = styled.div`
@@ -61,6 +65,10 @@ export const ServicesGrid = styled.div`
   gap: 2rem;
   align-items: center;
   justify-content: center;
+
+  @media (max-width: 768px) {
+  flex-direction: column;
+  }
 `;
 
 export const ServiceCard = styled.div`
