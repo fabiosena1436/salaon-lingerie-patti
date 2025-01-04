@@ -6,8 +6,6 @@ import {
   NewsletterContent,
   NewsletterTitle,
   NewsletterText,
-  NewsletterForm,
-  NewsletterInput,
   NewsletterMessage
 } from './styles';
 
@@ -45,7 +43,6 @@ export const Newsletter = () => {
         <NewsletterText>
           Aqui voce encontra ofertas exclusivas!
         </NewsletterText>
-       
         {status.message && (
           <NewsletterMessage $type={status.type}>
             {status.message}

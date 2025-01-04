@@ -50,44 +50,6 @@ export const NewsletterText = styled.p`
   }
 `;
 
-export const NewsletterForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 0 1rem;
-  
-  @media (min-width: 576px) {
-    flex-direction: row;
-    padding: 0;
-  }
-`;
-
-export const NewsletterInput = styled.input`
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid transparent;
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  background: white;
-  color: ${({ theme }) => theme.colors.text};
-
-  &::placeholder {
-    color: #999;
-  }
-
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.secondary};
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
-  }
-
-  @media (min-width: 576px) {
-    flex: 1;
-    min-width: 0; // Previne o input de estourar o container
-  }
-`;
-
 export const NewsletterMessage = styled.div`
   margin-top: 1rem;
   padding: 0.75rem;
