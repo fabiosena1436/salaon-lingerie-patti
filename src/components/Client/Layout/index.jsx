@@ -1,48 +1,60 @@
 // src/components/Client/Layout/index.jsx
-import { Outlet, NavLink } from 'react-router-dom'; // Adicione NavLink aqui
-import { 
-  LayoutContainer, 
+import { useState } from 'react';
+import { Outlet, NavLink } from 'react-router-dom';
+import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
+import {
+  LayoutContainer,
   MainContent,
-  ClientNav
+  ClientNav,
+  MobileMenuButton,
+  NavLinks,
+  MobileOverlay
 } from './styles';
 
 export const ClientLayout = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
+  const menuItems = [
+    { path: '/client', label: 'Meu Painel', end: true },
+    { path: '/client/appointments', label: 'Meus Agendamentos' },
+    { path: '/client/orders', label: 'Meus Pedidos' },
+    { path: '/client/profile', label: 'Meu Perfil' },
+    { path: '/', label: 'Home' }
+  ];
+
   return (
     <LayoutContainer>
       <ClientNav>
-        <NavLink 
-          to="/client" 
-          className={({ isActive }) => isActive ? 'active' : ''}
-          end
-        >
-          Meu Painel
-        </NavLink>
-        <NavLink 
-          to="/client/appointments"
-          className={({ isActive }) => isActive ? 'active' : ''}
-        >
-          Meus Agendamentos
-        </NavLink>
-        <NavLink 
-          to="/client/orders"
-          className={({ isActive }) => isActive ? 'active' : ''}
-        >
-          Meus Pedidos
-        </NavLink>
-        <NavLink 
-          to="/client/profile"
-          className={({ isActive }) => isActive ? 'active' : ''}
-        >
-          Meu Perfil
-        </NavLink>
-        <NavLink 
-          to="/"
-          className={({ isActive }) => isActive ? 'active' : ''}
-        >
-         Home
-        </NavLink>
+        <MobileMenuButton onClick={toggleMenu}>
+          {isMenuOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+        </MobileMenuButton>
+
+        <NavLinks $isOpen={isMenuOpen}>
+          {menuItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) => isActive ? 'active' : ''}
+              end={item.end}
+              onClick={closeMenu}
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </NavLinks>
+
+        <MobileOverlay $isOpen={isMenuOpen} onClick={closeMenu} />
       </ClientNav>
-      <MainContent>
+      
+      <MainContent onClick={isMenuOpen ? closeMenu : undefined}>
         <Outlet />
       </MainContent>
     </LayoutContainer>
