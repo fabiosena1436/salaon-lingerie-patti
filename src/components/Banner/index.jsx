@@ -1,4 +1,5 @@
 // src/components/Banner/index.jsx
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../Button';
 import { 
   BannerContainer, 
@@ -8,19 +9,16 @@ import {
   BannerButtons 
 } from './styles';
 
-
-
-
 export const Banner = () => {
+  const navigate = useNavigate();
 
   const handleViewAllProducts = () => {
-    window.location.href = '/store';
-   }
+    navigate('/store');
+  };
 
-   const handleViewAllAgendaments = () => {
-    window.location.href = '/client/new-appointment';
-   }
-
+  const handleViewAllAgendaments = () => {
+    navigate('/client/new-appointment');
+  };
 
   return (
     <BannerContainer>
@@ -31,8 +29,12 @@ export const Banner = () => {
           exclusivos e nossa coleção de lingerie.
         </BannerText>
         <BannerButtons>
-          <Button  onClick={handleViewAllAgendaments}>Agendar Horário</Button>
-          <Button variant="secondary" onClick={handleViewAllProducts}>Ver Produtos</Button>
+          <Button onClick={handleViewAllAgendaments}>
+            Agendar Horário
+          </Button>
+          <Button variant="secondary" onClick={handleViewAllProducts}>
+            Ver Produtos
+          </Button>
         </BannerButtons>
       </BannerContent>
     </BannerContainer>
