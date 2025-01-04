@@ -25,6 +25,16 @@ export const Logo = styled.div`
   }
 `;
 
+export const MobileContainer = styled.div`
+  display: none;
+  align-items: center;
+  gap: 1rem;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    display: flex;
+  }
+`;
+
 export const Nav = styled.nav`
   display: flex;
   align-items: center;

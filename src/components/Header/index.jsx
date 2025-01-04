@@ -13,7 +13,8 @@ import {
   NavLinks,
   MobileIcon,
   ButtonContainer,
-  NavLink
+  NavLink,
+  MobileContainer
 } from './styles';
 
 export const Header = () => {
@@ -53,9 +54,12 @@ export const Header = () => {
         <Link to="/" onClick={closeMenu}>Salão & Lingerie</Link>
       </Logo>
 
-      <MobileIcon onClick={toggleMenu}>
-        {isOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
-      </MobileIcon>
+      <MobileContainer>
+        <Cart />
+        <MobileIcon onClick={toggleMenu}>
+          {isOpen ? <AiOutlineClose /> : <AiOutlineMenu />}
+        </MobileIcon>
+      </MobileContainer>
 
       <Nav $isOpen={isOpen}>
         <NavLinks>
@@ -83,7 +87,6 @@ export const Header = () => {
           </li>
         </NavLinks>
         <ButtonContainer>
-          <Cart />
           {user ? (
             <>
               {user.role === 'admin' && (
@@ -117,3 +120,4 @@ export const Header = () => {
     </HeaderContainer>
   );
 };
+
