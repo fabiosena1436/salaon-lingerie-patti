@@ -1,3 +1,4 @@
+// src/pages/Store/index.jsx
 import { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db, checkFirebaseConnection } from '../../services/firebase';
@@ -12,11 +13,9 @@ export const Store = () => {
       try {
         console.log('Iniciando carregamento de produtos');
         
-        // Verifica conexão com Firebase
+        // Verifica conexão
         const isConnected = await checkFirebaseConnection();
-        if (!isConnected) {
-          throw new Error('Não foi possível conectar ao Firebase');
-        }
+        console.log('Status da conexão:', isConnected);
 
         const productsRef = collection(db, 'products');
         const querySnapshot = await getDocs(productsRef);
@@ -41,8 +40,30 @@ export const Store = () => {
     loadProducts();
   }, []);
 
-  if (loading) return <div>Carregando produtos...</div>;
-  if (error) return <div>Erro ao carregar produtos: {error}</div>;
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '200px' 
+      }}>
+        Carregando produtos...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ 
+        color: 'red', 
+        textAlign: 'center', 
+        padding: '20px' 
+      }}>
+        Erro ao carregar produtos: {error}
+      </div>
+    );
+  }
 
   return (
     <div>

@@ -1,6 +1,7 @@
+// src/services/firebase.js
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -24,12 +25,25 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Função para verificar conexão
+// Nova função de verificação de conexão
 const checkFirebaseConnection = async () => {
   try {
-    await db.terminate();
-    await db.enableNetwork();
-    console.log('Conexão com Firebase estabelecida');
+    // Tenta habilitar persistência (opcional)
+    try {
+      await enableIndexedDbPersistence(db);
+    } catch (err) {
+      if (err.code === 'failed-precondition') {
+        console.warn('Múltiplas abas abertas, persistência não disponível');
+      } else if (err.code === 'unimplemented') {
+        console.warn('Navegador não suporta persistência');
+      }
+    }
+
+    // Verifica se o app está inicializado
+    if (!app) {
+      throw new Error('Firebase não inicializado');
+    }
+
     return true;
   } catch (error) {
     console.error('Erro na conexão Firebase:', error);
