@@ -20,19 +20,22 @@ import {
   SocialLinks,
   SocialIcon,
   FooterBottom,
-  FooterRights
+  FooterRights,
+  FooterText
 } from './styles';
 
 export const Footer = () => {
+  const currentYear = new Date().getFullYear();
+
   return (
     <FooterContainer>
       <FooterContent>
         <FooterSection>
           <FooterTitle>Sobre Nós</FooterTitle>
-          <p>
+          <FooterText>
             Oferecemos os melhores serviços de beleza e uma seleção exclusiva de lingerie
             para realçar sua beleza e autoestima.
-          </p>
+          </FooterText>
         </FooterSection>
 
         <FooterSection>
@@ -47,7 +50,6 @@ export const Footer = () => {
             <FooterListItem>
               <Link to="/client/new-appointment">Agendamento</Link>
             </FooterListItem>
-           
           </FooterList>
         </FooterSection>
 
@@ -55,13 +57,16 @@ export const Footer = () => {
           <FooterTitle>Contato</FooterTitle>
           <FooterContact>
             <FooterListItem>
-              <AiOutlinePhone /> (11) 99999-9999
+              <AiOutlinePhone /> 
+              <a href="tel:+5511999999999">(11) 99999-9999</a>
             </FooterListItem>
             <FooterListItem>
-              <AiOutlineMail /> contato@salaoelingerie.com
+              <AiOutlineMail />
+              <a href="mailto:contato@salaoelingerie.com">contato@salaoelingerie.com</a>
             </FooterListItem>
             <FooterListItem>
-              <AiOutlineEnvironment /> Rua Example, 123 - São Paulo
+              <AiOutlineEnvironment />
+              <address>Rua Example, 123 - São Paulo</address>
             </FooterListItem>
           </FooterContact>
         </FooterSection>
@@ -69,13 +74,13 @@ export const Footer = () => {
         <FooterSection>
           <FooterTitle>Redes Sociais</FooterTitle>
           <SocialLinks>
-            <SocialIcon>
+            <SocialIcon href="https://facebook.com" target="_blank" rel="noopener noreferrer">
               <AiFillFacebook size={24} />
             </SocialIcon>
-            <SocialIcon>
+            <SocialIcon href="https://instagram.com" target="_blank" rel="noopener noreferrer">
               <AiFillInstagram size={24} />
             </SocialIcon>
-            <SocialIcon>
+            <SocialIcon href="https://whatsapp.com" target="_blank" rel="noopener noreferrer">
               <AiOutlineWhatsApp size={24} />
             </SocialIcon>
           </SocialLinks>
@@ -84,7 +89,7 @@ export const Footer = () => {
 
       <FooterBottom>
         <FooterRights>
-          © 2024 Salão & Lingerie. Todos os direitos reservados, feito com dedicação por Fabio Sena.
+          © {currentYear} Salão & Lingerie. Todos os direitos reservados, feito com dedicação por Fabio Sena.
         </FooterRights>
       </FooterBottom>
     </FooterContainer>

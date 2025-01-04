@@ -54,17 +54,16 @@ export const NavLinks = styled.ul`
     align-items: center;
     width: 100%;
   }
+`;
 
-  li {
-    a {
-      color: ${({ theme }) => theme.colors.text};
-      text-decoration: none;
-      transition: color 0.2s;
+export const NavLink = styled.span`
+  color: ${({ theme }) => theme.colors.text};
+  text-decoration: none;
+  transition: color 0.2s;
+  cursor: pointer;
 
-      &:hover {
-        color: ${({ theme }) => theme.colors.primary};
-      }
-    }
+  &:hover {
+    color: ${({ theme }) => theme.colors.primary};
   }
 `;
 
@@ -87,7 +86,7 @@ export const ButtonContainer = styled.div`
     flex-direction: column;
     width: 100%;
     
-    a, button {
+    button {
       width: 100%;
     }
   }

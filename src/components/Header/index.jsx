@@ -12,7 +12,8 @@ import {
   Nav,
   NavLinks,
   MobileIcon,
-  ButtonContainer
+  ButtonContainer,
+  NavLink
 } from './styles';
 
 export const Header = () => {
@@ -25,21 +26,31 @@ export const Header = () => {
     setIsOpen(!isOpen);
   };
 
+  const closeMenu = () => {
+    setIsOpen(false);
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
       showSuccess('Logout realizado com sucesso!');
       navigate('/login');
+      closeMenu();
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
       showError('Erro ao fazer logout. Tente novamente.');
     }
   };
 
+  const handleNavigation = (path) => {
+    navigate(path);
+    closeMenu();
+  };
+
   return (
     <HeaderContainer>
       <Logo>
-        <Link to="/">Salão & Lingerie</Link>
+        <Link to="/" onClick={closeMenu}>Salão & Lingerie</Link>
       </Logo>
 
       <MobileIcon onClick={toggleMenu}>
@@ -48,13 +59,27 @@ export const Header = () => {
 
       <Nav $isOpen={isOpen}>
         <NavLinks>
-          <li><Link to="/">Home</Link></li>
-          <li><Link to="/servicos">Serviços</Link></li>
-          <li><Link to="/store">Loja</Link></li>
           <li>
-            <Link to={user ? "/client/new-appointment" : "/login"}>
+            <NavLink onClick={() => handleNavigation('/')}>
+              Home
+            </NavLink>
+          </li>
+          <li>
+            <NavLink onClick={() => handleNavigation('/servicos')}>
+              Serviços
+            </NavLink>
+          </li>
+          <li>
+            <NavLink onClick={() => handleNavigation('/store')}>
+              Loja
+            </NavLink>
+          </li>
+          <li>
+            <NavLink 
+              onClick={() => handleNavigation(user ? "/client/new-appointment" : "/login")}
+            >
               Agendar
-            </Link>
+            </NavLink>
           </li>
         </NavLinks>
         <ButtonContainer>
@@ -62,21 +87,30 @@ export const Header = () => {
           {user ? (
             <>
               {user.role === 'admin' && (
-                <Link to="/admin">
-                  <Button $variant="secondary">Painel Admin</Button>
-                </Link>
+                <Button 
+                  $variant="secondary" 
+                  onClick={() => handleNavigation('/admin')}
+                >
+                  Painel Admin
+                </Button>
               )}
-              <Link to="/client">
-                <Button $variant="secondary">Minha Área</Button>
-              </Link>
+              <Button 
+                $variant="secondary" 
+                onClick={() => handleNavigation('/client')}
+              >
+                Minha Área
+              </Button>
               <Button $variant="secondary" onClick={handleLogout}>
                 Sair
               </Button>
             </>
           ) : (
-            <Link to="/login">
-              <Button $variant="secondary">Login</Button>
-            </Link>
+            <Button 
+              $variant="secondary" 
+              onClick={() => handleNavigation('/login')}
+            >
+              Login
+            </Button>
           )}
         </ButtonContainer>
       </Nav>

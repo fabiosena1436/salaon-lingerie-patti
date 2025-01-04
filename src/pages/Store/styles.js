@@ -1,5 +1,6 @@
 // src/pages/Store/styles.js
-import styled from 'styled-components';
+import styled, { css } from 'styled-components'; // Adicionando a importação do css
+
 
 export const StoreContainer = styled.div`
   max-width: 1200px;
@@ -15,19 +16,27 @@ export const Header = styled.div`
     color: ${({ theme }) => theme.colors.text};
     font-size: 2.5rem;
   }
+
+ 
 `;
 
 export const SearchSection = styled.div`
   margin-bottom: 2rem;
+  @media screen {
+    display: flex;   
+  
+  }
 `;
 
 export const SearchBar = styled.div`
   display: flex;
   align-items: center;
   background: white;
-  padding: 0.75rem 1rem;
+  padding-left: 0.6rem;
+  padding:  auto;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
 
   svg {
     color: ${({ theme }) => theme.colors.text};
@@ -36,6 +45,7 @@ export const SearchBar = styled.div`
   }
 
   input {
+   
     flex: 1;
     border: none;
     font-size: 1rem;
@@ -181,9 +191,7 @@ export const FilterButton = styled.button`
   cursor: pointer;
   color: ${({ theme }) => theme.colors.text};
 
-  @media (min-width: ${({ theme }) => theme.breakpoints.desktop}) {
-    display: none;
-  }
+ 
 `;
 
 export const CloseButton = styled.button`
