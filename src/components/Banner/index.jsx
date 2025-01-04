@@ -14,7 +14,7 @@ import {
 export const Banner = () => {
 
   const handleViewAllProducts = () => {
-    window.location.href = '/products';
+    window.location.href = '/store';
    }
 
    const handleViewAllAgendaments = () => {
